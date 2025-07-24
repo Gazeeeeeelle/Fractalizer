@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="fracapi:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/fracapi_jar</output-path>
+    <root id="archive" name="fracapi.jar">
+      <element id="module-output" name="fracapi" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/jocl/jocl/2.0.2/jocl-2.0.2.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
