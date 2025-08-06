@@ -5,7 +5,7 @@ import java.util.Scanner;
 
 class InputReceiver extends Thread{
     private final Scanner SCANNER = new Scanner(System.in);
-    private ArrayList<Command> commands = new ArrayList<>();
+    private final ArrayList<Command> commands = new ArrayList<>();
     private final String HELP_TEXT = buildHelpText();
     private final String GEN_ERROR = "Invalid input.";
     private final String BINDINGS_TEXT =
@@ -46,11 +46,11 @@ class InputReceiver extends Thread{
             }
         }
     }
-    String ask(String question){
+    private String ask(String question){
         System.out.print(question);
         return SCANNER.nextLine();
     }
-    int getCommandIndex(String command){
+    private int getCommandIndex(String command){
         for (int i = 0; i < commands.size(); i++) {
             if(command.matches(commands.get(i).name)){
                 return i;
@@ -59,7 +59,7 @@ class InputReceiver extends Thread{
         return -1;
     }
 
-    String buildHelpText(){
+    private String buildHelpText(){
         String ht = "";
         for (int i = 0; i < commands.size(); i++) {
             ht = ht.concat(buildHelpTextForCommand(i)+"\n");
@@ -68,10 +68,10 @@ class InputReceiver extends Thread{
         ht = sep + ht + sep;
         return ht;
     }
-    String createSeparator(int l){
+    private String createSeparator(int l){
         return "-".repeat(l)+"\n";
     }
-    int findLongestLineSize(String text){
+    private int findLongestLineSize(String text){
         int l = 0;
         String[] lines = text.split("\n");
         for(String s : lines){
@@ -79,7 +79,7 @@ class InputReceiver extends Thread{
         }
         return l;
     }
-    String buildHelpTextForCommand(int index){
+    private String buildHelpTextForCommand(int index){
         String r1 = "  ->  ";
         return (index >= 0) ?
                 commands.get(index).name +
@@ -90,14 +90,14 @@ class InputReceiver extends Thread{
         :
                 GEN_ERROR;
     }
-    int getLargestCommandRegexSize(){
+    private int getLargestCommandRegexSize(){
         int l = 0;
         for(Command c : commands){
             if(c.name.length() > l) l = c.name.length();
         }
         return l;
     }
-    void loadCommands(){
+    private void loadCommands(){
         //coordinates
         {
             commands.add(new Command(
@@ -287,7 +287,7 @@ class InputReceiver extends Thread{
             );
         }
     }
-    static class Command{
+    private static class Command{
         String name;
         String instruction;
         CommandFunction cf;
@@ -297,7 +297,7 @@ class InputReceiver extends Thread{
             this.cf = cf;
         }
     }
-    interface CommandFunction{
+    private interface CommandFunction{
         int function();
     }
 }

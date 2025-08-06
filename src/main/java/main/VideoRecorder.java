@@ -49,16 +49,14 @@ class VideoRecorder extends Thread{
         if(!isRec) {
             isRec = true;
             return true;
-        }else{
-            return false;
         }
+        return false;
     }
     static boolean stopRecording(){
         if(isRec) {
             isRec = false;
             return true;
-        }else{
-            return false;
         }
+        return false;
     }
 }

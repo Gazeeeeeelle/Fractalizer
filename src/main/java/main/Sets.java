@@ -1,13 +1,13 @@
 package main;
 
 abstract class Sets {
-    static final int FRACTAL = 1;
-    static final int ABS = 2;
-    static final int DIST = 3;
-    static boolean julia = false;
-    static double z1x, z1y = 0.0;
-    static int solN = 100;
+    static final int FRACTAL = 1,
+                     ABS = 2,
+                     DIST = 3;
     static int mode = FRACTAL;
+    static boolean julia = false;
+    static double z1x = 0.0, z1y = 0.0;
+    static int solN = 100;
     static boolean connectLines = false;
     static double[] calc_dist(double x, double y, int set){
         return switch (set) {
@@ -20,7 +20,7 @@ abstract class Sets {
             case 4 ->
                     ComplexMath.sin(x, y);
             case 5 ->
-                    ComplexMath.zetaFunction(x, y, 100000);
+                    ComplexMath.zetaFunction(x, y, 3000);
             case 6 ->
                     new double[]{y, ComplexMath.zetaFunction(x, y, (int)z1x)[0]};
             case 7 ->
@@ -28,32 +28,9 @@ abstract class Sets {
             default -> new double[]{0, 0};
         };
     }
-    static double calc_abs(int pixelX, int pixelY){
-        double x = Renderer.pxToCoorX(pixelX);
-        double y = Renderer.pxToCoorY(pixelY);
-        return switch (Renderer.setOfInterest) {
-            case 1 ->
-                    plot_fibonacci_abs(x, y);
-            case 2 ->
-                    plot_zz(x, y);
-            case 3 ->
-                    ComplexMath.abs(ComplexMath.cos(x, y));
-            case 4 ->
-                    ComplexMath.abs(ComplexMath.sin(x, y));
-            case 5 ->
-                    ComplexMath.absComplexPow(x, y, z1x, z1y);
-            case 6 ->
-                    ComplexMath.abs(ComplexMath.zetaFunction(x, y, 50));
-            case 7 ->
-                    ComplexMath.zetaFunction(x, y, 50)[0];
-            case 8 ->
-                    ComplexMath.zetaFunction(x, y, 50)[1];
-            default -> 0;
-        };
-    }
     static double[] calc_dir(int pixelX, int pixelY){
-        double x = Renderer.pxToCoorX(pixelX);
-        double y = Renderer.pxToCoorY(pixelY);
+        double x = Renderer.p2cx(pixelX);
+        double y = Renderer.p2cy(pixelY);
         return switch (Renderer.setOfInterest) {
             case 1 ->
                     ComplexMath.fibonacci_C(x, y);
@@ -74,34 +51,27 @@ abstract class Sets {
         return !julia ?
                 switch (Renderer.setOfInterest) {
                     case 1 ->
-                            mandelbrotFunction(z1x, z1y, Renderer.pxToCoorX(pixelX), Renderer.pxToCoorY(pixelY), precision, 0);
+                            mandelbrotFunction(z1x, z1y, Renderer.p2cx(pixelX), Renderer.p2cy(pixelY), precision, 0);
                     case 2 ->
-                            burningShipFunction(z1x, z1y, Renderer.pxToCoorX(pixelX), Renderer.pxToCoorY(pixelY), precision, 0);
+                            burningShipFunction(z1x, z1y, Renderer.p2cx(pixelX), Renderer.p2cy(pixelY), precision, 0);
                     case 3 ->
-                            celticFunction(z1x, z1y, Renderer.pxToCoorX(pixelX), Renderer.pxToCoorY(pixelY), precision, 0);
+                            celticFunction(z1x, z1y, Renderer.p2cx(pixelX), Renderer.p2cy(pixelY), precision, 0);
                     case 4 ->
-                            qMandelFunction(z1x, z1y, Renderer.pxToCoorX(pixelX), Renderer.pxToCoorY(pixelY), precision, 0);
+                            qMandelFunction(z1x, z1y, Renderer.p2cx(pixelX), Renderer.p2cy(pixelY), precision, 0);
                     default -> false;
                 }
                 :
                 switch (Renderer.setOfInterest) {
                     case 1 ->
-                            mandelbrotFunction(Renderer.pxToCoorX(pixelX), Renderer.pxToCoorY(pixelY), z1x, z1y, precision, 0);
+                            mandelbrotFunction(Renderer.p2cx(pixelX), Renderer.p2cy(pixelY), z1x, z1y, precision, 0);
                     case 2 ->
-                            burningShipFunction(Renderer.pxToCoorX(pixelX), Renderer.pxToCoorY(pixelY), z1x, z1y, precision, 0);
+                            burningShipFunction(Renderer.p2cx(pixelX), Renderer.p2cy(pixelY), z1x, z1y, precision, 0);
                     case 3 ->
-                            celticFunction(Renderer.pxToCoorX(pixelX), Renderer.pxToCoorY(pixelY), z1x, z1y, precision, 0);
+                            celticFunction(Renderer.p2cx(pixelX), Renderer.p2cy(pixelY), z1x, z1y, precision, 0);
                     case 4 ->
-                            qMandelFunction(Renderer.pxToCoorX(pixelX), Renderer.pxToCoorY(pixelY), z1x, z1y, precision, 0);
+                            qMandelFunction(Renderer.p2cx(pixelX), Renderer.p2cy(pixelY), z1x, z1y, precision, 0);
                     default -> false;
                 };
-    }
-    static double plot_fibonacci_abs(double x, double y){
-        double[] c = ComplexMath.fibonacci_C(x, y);
-        return ComplexMath.abs(c);
-    }
-    static double plot_zz(double x, double y){
-        return ComplexMath.absComplexPow(x, y, x, y);
     }
     private static boolean mandelbrotFunction(double z1, double z2, double c1, double c2, int precision, int ite){
         double t;
@@ -127,32 +97,6 @@ abstract class Sets {
             if(ite >= precision) return false;
             ite++;
         }
-    }
-//    private static boolean qMandelFunction(double z1, double z2, double c1, double c2, int precision, int ite){
-//        double arg;
-//        double abs;
-//        double p1 = z1x;
-//        double t;
-//        for(;;) {
-//            arg = p1 * ComplexMath.arg1(z1, z2);
-//            abs = ComplexMath.abs(z1, z2);
-//            t = z2/abs;
-//
-//            abs = Math.pow(abs, p1);
-//
-//            z2 = t*abs+c2;
-//            z1 = signC(arg)*Math.sqrt(1-t*t)*abs+c1;
-//
-//            I saw this... B?
-//            if(z1*z1 + z2*z2 > 4) return true;
-//            if(ite >= precision) return false;
-//            ite++;
-//        }
-//    }
-    private static int signC(double v){
-        double n = (int)(2*v/Math.PI);
-        if(n==1||n==-1||n==2||n==-2) return -1;
-        return 1;
     }
     private static boolean burningShipFunction(double z1, double z2, double c1, double c2, int precision, int ite){
         double k;

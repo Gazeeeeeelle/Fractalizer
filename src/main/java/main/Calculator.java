@@ -7,7 +7,6 @@ class Calculator extends Thread{
     int index;
     int precision = 0;
     boolean purpose = true;
-    static boolean angle = true;
     Calculator(int order, int index){
         this.order = order;
         this.index = index;
@@ -34,18 +33,18 @@ class Calculator extends Thread{
                                     c = Sets.calc_dist(v, k / density, Renderer.setOfInterest);
                                     if(Sets.connectLines) {
                                         c2 = Sets.calc_dist(v + var, k / density, Renderer.setOfInterest);
-                                        Renderer.paintLine(c, c2, Color.blue);
+                                        Renderer.draw_line(c, c2, Color.blue);
                                     }else{
-                                        Renderer.paintDot(c, Color.blue);
+                                        Renderer.draw_dot(c, Color.blue);
                                     }
 
                                     //vertical lines
                                     c = Sets.calc_dist(k / density, v, Renderer.setOfInterest);
                                     if(Sets.connectLines) {
                                         c2 = Sets.calc_dist(k / density, v + var, Renderer.setOfInterest);
-                                        Renderer.paintLine(c, c2, Color.green);
+                                        Renderer.draw_line(c, c2, Color.green);
                                     }else{
-                                        Renderer.paintDot(c, Color.green);
+                                        Renderer.draw_dot(c, Color.green);
                                     }
                                 }
                             }
@@ -55,19 +54,16 @@ class Calculator extends Thread{
                         }
                     }
                     if (Renderer.isOn) precision++;
-                }else {
+                } else {
                     for (int y = 0; y < Window.jpHeight; y++) {
                         for (int x = index; x < Window.jpWidth; x += order) {
                             if (!Renderer.isOn) break;
+                            //if the pixel isn't colored
                             if (Renderer.img.getRGB(x, y) == -16777216) {
                                 if (Sets.mode == Sets.FRACTAL) {
                                     Renderer.draw_frac(x, y, precision);
                                 } else if (Sets.mode == Sets.ABS) {
-                                    if(angle){
-                                        Renderer.draw_dir(x, y);
-                                    }else {
-                                        Renderer.draw_abs(x, y);
-                                    }
+                                    Renderer.draw_dir(x, y);
                                 }
                             }
                         }

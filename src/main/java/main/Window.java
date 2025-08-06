@@ -1,9 +1,6 @@
 package main;
 
-import org.bytedeco.libfreenect._freenect_context;
-
 import javax.swing.*;
-import javax.swing.plaf.FontUIResource;
 import java.awt.*;
 import java.awt.event.*;
 
@@ -148,8 +145,8 @@ class Window extends JFrame implements MouseMotionListener, MouseListener, KeyLi
             case 'f':
                 if (time < System.currentTimeMillis() - 200) {
                     try {
-                        double x = Renderer.pxToCoorX((int) Fractalizer.getMousePosition().getX());
-                        double y = Renderer.pxToCoorY((int) Fractalizer.getMousePosition().getY());
+                        double x = Renderer.p2cx((int) Fractalizer.getMousePosition().getX());
+                        double y = Renderer.p2cy((int) Fractalizer.getMousePosition().getY());
                         time = System.currentTimeMillis();
                         Sets.z1x = x;
                         Sets.z1y = y;
@@ -175,8 +172,8 @@ class Window extends JFrame implements MouseMotionListener, MouseListener, KeyLi
                 double x = Fractalizer.getMousePosition().getX();
                 double y = Fractalizer.getMousePosition().getY();
 
-                x = Renderer.pxToCoorX((int) x);
-                y = Renderer.pxToCoorY((int) y);
+                x = Renderer.p2cx((int) x);
+                y = Renderer.p2cy((int) y);
 
                 double dX = Renderer.toX - Renderer.fromX;
                 double dY = Renderer.toY - Renderer.fromY;

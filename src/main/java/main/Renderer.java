@@ -5,66 +5,66 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.util.ArrayList;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 class Renderer extends Thread {
-    static final int whiteRGB = -1;
     static BufferedImage img = new BufferedImage(Window.jpWidth, Window.jpHeight, BufferedImage.TYPE_INT_RGB);
-    static Graphics2D img_g = (Graphics2D) img.getGraphics();
-    static Graphics2D g = (Graphics2D) Window.Fractalizer.getGraphics();
-    static int setOfInterest = 1;
-    static double fromX = ((double) main.Window.jpWidth/ main.Window.jpHeight * -2);
-    static double toX = ((double) main.Window.jpWidth/ main.Window.jpHeight * 2);
-    static double fromY = -2;
-    static double toY = 2;
+    private static final Graphics2D
+            img_g = (Graphics2D) img.getGraphics(),
+            g = (Graphics2D) Window.Fractalizer.getGraphics();
+    static double //Rendering bounds:
+            fromX = ((double) main.Window.jpWidth/ main.Window.jpHeight * -2),
+            toX = ((double) main.Window.jpWidth/ main.Window.jpHeight * 2),
+            fromY = -2,
+            toY = 2;
     static final double[] initialCoordinates = new double[]{fromX, toX, fromY, toY};
-    static int[] colors1 = {
-            new Color(66, 30, 15).getRGB(),
-            new Color(25, 7, 26).getRGB(),
-            new Color(9, 1, 47).getRGB(),
-            new Color(4, 4, 73).getRGB(),
-            new Color(0, 7, 100).getRGB(),
-            new Color(12, 44, 138).getRGB(),
-            new Color(24, 82, 177).getRGB(),
-            new Color(57, 125, 209).getRGB(),
-            new Color(134, 181, 229).getRGB(),
-            new Color(211, 236, 248).getRGB(),
-            new Color(241, 233, 191).getRGB(),
-            new Color(248, 201, 95).getRGB(),
-            new Color(255, 170, 0).getRGB(),
-            new Color(204, 128, 0).getRGB(),
-            new Color(153, 87, 0).getRGB(),
-            new Color(106, 52, 3).getRGB()
-    };
-    static int[] greenTone = makeTone(0, 1, 0, 50, 100, 0, 100, true, false);
-    static int[] iceCoaledTone = makeTone(0, 1, 1, 0, 50, 255, 100, true, false);
-    static int[] redToYellowTone = makeTone(1, 1, 0, 255, 50, 0, 100, true, false);
-    static int[] blueToPurpleTone = makeTone(1, 0, 1, 50, 0, 255, 100, true, false);
-    static int[] greenToYellowTone = makeTone(1, 1, 0, 50, 255, 0, 100, true, false);
-    static int[] grayTone = makeTone(1, 1, 1, 60, 60, 60, 70, true, false);
-    static int[] rainbowTone = rainbowMaker(250);
-    static int[][] colorPalettes;
-    static int whichColorPalette = 0;
-    static boolean isOn = true;
-    static Calculator[] calc;
-    static boolean showPosition = false;
+    static int setOfInterest = 1;
     static double topographicStep = .1;
-    static boolean axis = false;
-    static boolean night = false;
-    static boolean preCalcRange = true;
+    static Calculator[] calc;
+    static boolean isOn = true;
+    static boolean //options:
+            showPosition = false,
+            axis = false,
+            night = false,
+            preCalcRange = true;
+    static int whichColorPalette = 0;
+    static int[] //Color palettes:
+            colors1 = {
+            -12444145, -15136998, -16187089, -16513975,
+            -16775324, -15979382, -15183183, -13009455,
+            -7948827 , -2888456 , -923201  , -472737  ,
+            -22016   , -3375104 , -6727936 , -9817085
+            },
+            greenTone = makeTone(0, 1, 0, 50, 100, 0, 100, true, false),
+            iceCoaledTone = makeTone(0, 1, 1, 0, 50, 255, 100, true, false),
+            redToYellowTone = makeTone(1, 1, 0, 255, 50, 0, 100, true, false),
+            blueToPurpleTone = makeTone(1, 0, 1, 50, 0, 255, 100, true, false),
+            greenToYellowTone = makeTone(1, 1, 0, 50, 255, 0, 100, true, false),
+            grayTone = makeTone(1, 1, 1, 60, 60, 60, 70, true, false),
+            rainbowTone = rainbowMaker(250);
+    static int[][] colorPalettes = new int[][]{
+            colors1,
+            greenTone,
+            redToYellowTone,
+            blueToPurpleTone,
+            iceCoaledTone,
+            greenToYellowTone,
+            rainbowTone,
+            grayTone
+    };
     @Override
     public void run(){
         initialize();
-        int[] np = readData();
-        buildCalculatorSet(np[0], np[1]);
+        buildCalculatorSet(1, 1);
         while(true){
 
-
             g.drawImage(img, null, 0, 0);
-            g.setColor(Color.white);
+
             if(axis) {
-                g.drawLine(coorToPxX(0), coorToPxY(fromY), coorToPxX(0), coorToPxY(toY));
-                g.drawLine(coorToPxX(fromX), coorToPxY(0), coorToPxX(toX), coorToPxY(0));
+                g.setColor(Color.white);
+                g.drawLine(c2px(0), c2py(fromY), c2px(0), c2py(toY));
+                g.drawLine(c2px(fromX), c2py(0), c2px(toX), c2py(0));
             }
 
             try {
@@ -88,12 +88,32 @@ class Renderer extends Thread {
         clearImage();
         System.out.println("Calculators started.");
     }
-    static void paintDot(double[] c, Color color){
+    static void draw_frac(int x, int y, int precision){
+        if (Sets.calc_frac(x, y, precision)) {
+            if (night) {
+                img.setRGB(x, y, -1);
+            } else {
+                img.setRGB(
+                        x, y,
+                        colorPalettes[whichColorPalette] [
+                                precision % colorPalettes[whichColorPalette].length
+                                ]
+                );
+            }
+        }
+    }
+    static void draw_dir(int x, int y){
+        img.setRGB(
+                x, y,
+                getColorDir(Sets.calc_dir(x, y))
+        );
+    }
+    static void draw_dot(double[] c, Color color){
         if(c[0] > Renderer.fromX && c[0] < Renderer.toX &&
                 c[1] > Renderer.fromY && c[1] < Renderer.toY
         ) {
-            int px = Renderer.coorToPxX(c[0]);
-            int py = Renderer.coorToPxY(c[1]);
+            int px = Renderer.c2px(c[0]);
+            int py = Renderer.c2py(c[1]);
             if(px>=0 && px < img.getWidth() &&
                     py>=0 && py < img.getHeight()
             ){
@@ -101,16 +121,64 @@ class Renderer extends Thread {
             }
         }
     }
-    static void paintLine(double[] c1, double[] c2, Color color){
-        assert c1.length == 2;
-        assert c2.length == 2;
+    static void draw_line(double[] c1, double[] c2, Color color){
         if(Double.isNaN(c1[0])) return;
-        int px1 = Renderer.coorToPxX(c1[0]);
-        int py1 = Renderer.coorToPxY(c1[1]);
-        int px2 = Renderer.coorToPxX(c2[0]);
-        int py2 = Renderer.coorToPxY(c2[1]);
         img_g.setColor(color);
-        img_g.drawLine(px1, py1, px2, py2);
+        img_g.drawLine(
+                Renderer.c2px(c1[0]),
+                Renderer.c2py(c1[1]),
+                Renderer.c2px(c2[0]),
+                Renderer.c2py(c2[1])
+        );
+    }
+    static int getColorDir (double[] z){
+        double arg = Math.toDegrees(ComplexMath.arg1(z[0], z[1]));
+        if(arg < 0) arg += 360;
+        int r=0,
+            g=0,
+            b=0;
+        if(arg >= 300 || arg <= 60){
+            r = 255;
+            if(arg >= 300){
+                g = (int)(4.25d*(360-arg));
+            } else {
+                b = (int)(4.25d*(arg));
+            }
+        } else if(arg >= 60 && arg <= 180){
+            b = 255;
+            if(arg <= 120){
+                r = (int)(4.25d*(120-arg));
+            } else {
+                g = (int)(4.25d*(arg-120));
+            }
+        } else {
+            g = 255;
+            if(arg <= 240){
+                b = (int)(4.25d*(240-arg));
+            } else {
+                r = (int)(4.25d*(arg-240));
+            }
+        }
+        double abs = Math.hypot(z[0], z[1]);
+        double i = topographicStep*100;
+        if(abs < i) {
+            double k = abs / i;
+            r = (int) (r*k);
+            g = (int) (g*k);
+            b = (int) (b*k);
+        }else{
+            i = (abs/(topographicStep*10));
+            r += (int)i;
+            g += (int)i;
+            b += (int)i;
+        }
+        if(r > 255) r = 255;
+        if(g > 255) g = 255;
+        if(b > 255) b = 255;
+        if(r == 0 && r == g && r == b){
+            r = 1;
+        }
+        return (r<<16)+(g<<8)+(b);
     }
     static void destroyCalculatorSet(){
         try {
@@ -124,98 +192,10 @@ class Renderer extends Thread {
     static int limitToRange(int value, int min, int max){
         return Math.max(Math.min(value, max), min);
     }
-    static void draw_frac(int x, int y, int precision){
-        if (Sets.calc_frac(x, y, precision)) {
-            if (night) {
-                img.setRGB(x, y, whiteRGB);
-            } else {
-                img.setRGB(
-                        x, y,
-                        colorPalettes[whichColorPalette] [
-                            precision % colorPalettes[whichColorPalette].length
-                        ]
-                );
-            }
-        }
-    }
-    static void draw_abs(int x, int y){
-        img.setRGB(
-                x, y,
-                colorPalettes[whichColorPalette] [
-                        Math.floorMod((int)(Sets.calc_abs(x, y)/topographicStep), colorPalettes[whichColorPalette].length)
-                        ]
-        );
-    }
-    static void draw_dir(int x, int y){
-        img.setRGB(
-                x, y,
-                getColorDir(Sets.calc_dir(x, y))
-        );
-    }
-    static int getColorDir (double[] z){
-        assert z.length == 2;
-        double arg = Math.toDegrees(ComplexMath.arg1(z[0], z[1]));
-        if(arg < 0) arg = 360 + arg;
-        int r=1, g=1, b=1;
-        if(arg >= 300 || arg <= 60){
-            r = 255;
-            if(arg >= 300){
-                g = (int)(255*(360-arg)/60);
-            } else {
-                b = (int)(255*(arg)/60);
-            }
-        }
-        if(arg >= 60 && arg <= 180){
-            b = 255;
-            if(arg <= 120){
-                r = (int)(255*(120-arg)/60);
-            } else {
-                g = (int)(255*(arg-120)/60);
-            }
-        }
-        if(arg >= 180 && arg <= 300){
-            g = 255;
-            if(arg <= 240){
-                b = (int)(255*(240-arg)/60);
-            } else {
-                r = (int)(255*(arg-240)/60);
-            }
-        }
-        double abs = Math.hypot(z[0], z[1]);
-        double i = topographicStep*100;
-        if(abs < i) {
-            double k = abs / i;
-            r = (int) (1d * r * k);
-            g = (int) (1d * g * k);
-            b = (int) (1d * b * k);
-        }else{
-            r += (int)(abs/(topographicStep*10));
-            g += (int)(abs/(topographicStep*10));
-            b += (int)(abs/(topographicStep*10));
-        }
-        if(r > 255) r = 255;
-        if(g > 255) g = 255;
-        if(b > 255) b = 255;
-        if(r == 0 && r == g && r == b){
-            r = 1;
-        }
-        return (r<<16)+(g<<8)+(b);
-    }
     static boolean isDraw(int x, int y, int precision){
         return Sets.calc_frac(x, y, precision);
     }
     private static void initialize(){
-        colorPalettes = new int[][]{
-                colors1,
-                greenTone,
-                redToYellowTone,
-                blueToPurpleTone,
-                iceCoaledTone,
-                greenToYellowTone,
-                rainbowTone,
-                grayTone
-        };
-        g = (Graphics2D) main.Window.Fractalizer.getGraphics();
         AffineTransform af = new AffineTransform();
         af.setToScale((double) main.Window.width * 1.25 / (double) main.Window.jpWidth,
                 (double) main.Window.height * 1.25 / (double) main.Window.jpHeight
@@ -296,21 +276,21 @@ class Renderer extends Thread {
         minimumR = (int) ((double) minimumR * r);
         minimumG = (int) ((double) minimumG * g);
         minimumB = (int) ((double) minimumB * b);
-        Color[] colors;
+        int[] colors;
         if(back) {
-            colors = new Color[(size * 2) - 1];
+            colors = new int[(size * 2) - 1];
         }else{
-            colors = new Color[size];
+            colors = new int[size];
         }
-        final double rk = (r * 255 - minimumR) / size;
-        final double gk = (g * 255 - minimumG) / size;
-        final double bk = (b * 255 - minimumB) / size;
+        final double rk = (r * 255 - minimumR) / size,
+                     gk = (g * 255 - minimumG) / size,
+                     bk = (b * 255 - minimumB) / size;
         int rv, gv, bv;
         for (int i = 0; i < size; i++) {
             rv = (int) ((i+1) * rk) + minimumR;
             gv = (int) ((i+1) * gk) + minimumG;
             bv = (int) ((i+1) * bk) + minimumB;
-            colors[i] = new Color(rv, gv, bv);
+            colors[i] = (rv<<16)+(gv<<8)+(bv);
         }
         if(back) {
             int j = size;
@@ -321,23 +301,16 @@ class Renderer extends Thread {
         }
         if(invert){
             for (int i = 0; i < colors.length/2; i++) {
-                Color kc1 = colors[colors.length-1-i];
-                Color kc2 = colors[i];
-                colors[colors.length-1-i] = kc2;
-                colors[i] = kc1;
+                int t = colors[i];
+                colors[i] = colors[colors.length-1-i];
+                colors[colors.length-1-i] = t;
             }
         }
-        int[] colorsn = new int[colors.length];
-        int jk = 0;
-        for(Color c : colors){
-            colorsn[jk] = c.getRGB();
-            jk++;
-        }
-        return colorsn;
+        return colors;
     }
     private static int[] rainbowMaker(int size){
         size /= 6;
-        final int[][] colorss = new int[][]{
+        final int[][] colors = new int[][]{
                 makeTone(1, 1, 0, 255, 0, 0, size, false, false),
                 makeTone(1, 1, 0, 0, 255, 0, size, false, true),
                 makeTone(0, 1, 1, 0, 255, 0, size, false, false),
@@ -347,7 +320,7 @@ class Renderer extends Thread {
         };
         int[] color = new int[size * 6];
         int i = 0;
-        for(int[] bc : colorss){
+        for(int[] bc : colors){
             for(int c : bc){
                 color[i] = c;
                 i++;
@@ -355,60 +328,32 @@ class Renderer extends Thread {
         }
         return color;
     }
-    private static int getScreenshotNum(){
-        return Integer.parseInt(getTextFile("/scn.txt"));
-    }
-    private static String getTextFile(String path){
-        try {
-            return new BufferedReader(new InputStreamReader(Renderer.class.getResource(path).openStream()))
-                    .readLine();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
     static void screenshot(){
-        int screenshotNum = getScreenshotNum();
-        File file = new File("screenshot" + screenshotNum + ".png");
+        File file = new File(
+                LocalDate.now()+"_" +
+                        LocalTime.now().toString()
+                                .replaceAll("\\.", "-")
+                                .replaceAll(":", ";")
+                        + ".png");
         try {
             ImageIO.write(img, "png", file);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
     }
-    private static int[] readData(){
-        ArrayList<Integer> n = new ArrayList<>();
-        try {
-            BufferedReader br = new BufferedReader(new InputStreamReader(Renderer.class.getResource("/data.txt").openStream()));
-            for(String s : br.lines().toList()){
-                try{
-                    n.add(Integer.parseInt(s));
-                }catch (NumberFormatException e){
-                    //pass
-                }
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        int[] na = new int[n.size()];
-        for (int i = 0; i < n.size(); i++) {
-            na[i] = n.get(i);
-        }
-        return na;
-    }
-    static double pxToCoorX(int px){
+    static double p2cx(int px){
         return ((toX - fromX) * ((double)px/ Window.jpWidth))
                 + fromX;
     }
-    static double pxToCoorY(int px){
+    static double p2cy(int px){
         return ((fromY - toY) * ((double)px / Window.jpHeight))
                 + toY;
     }
-    static int coorToPxX(double coor){
+    static int c2px(double coor){
         return (int)((coor-fromX) * Window.jpWidth
                 /(toX - fromX));
     }
-    static int coorToPxY(double coor){
+    static int c2py(double coor){
         return (int)((coor-toY) * Window.jpHeight
                         / (fromY - toY));
     }
