@@ -129,32 +129,13 @@ class Window extends JFrame implements MouseMotionListener, MouseListener, KeyLi
     }
     @Override
     public void keyPressed(KeyEvent e) {
+        Control.doAction(e);
         switch (e.getKeyChar()) {
             case 'g':
-                if (time < System.currentTimeMillis() - 200) {
-                    try {
-                        time = System.currentTimeMillis();
-                        Sets.z1x = 0;
-                        Sets.z1y = 0;
-                        Renderer.clearImage();
-                    } catch (NullPointerException exception) {
-                        //pass
-                    }
-                }
+
                 break;
             case 'f':
-                if (time < System.currentTimeMillis() - 200) {
-                    try {
-                        double x = Renderer.p2cx((int) Fractalizer.getMousePosition().getX());
-                        double y = Renderer.p2cy((int) Fractalizer.getMousePosition().getY());
-                        time = System.currentTimeMillis();
-                        Sets.z1x = x;
-                        Sets.z1y = y;
-                        Renderer.clearImage();
-                    } catch (NullPointerException exception) {
-                        //pass
-                    }
-                }
+
                 break;
             case 'o':
                 Renderer.resetRange();

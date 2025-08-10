@@ -59,13 +59,13 @@ class Renderer extends Thread {
         buildCalculatorSet(1, 1);
         while(true){
 
-            g.drawImage(img, null, 0, 0);
-
             if(axis) {
                 g.setColor(Color.white);
                 g.drawLine(c2px(0), c2py(fromY), c2px(0), c2py(toY));
                 g.drawLine(c2px(fromX), c2py(0), c2px(toX), c2py(0));
             }
+
+            g.drawImage(img, null, 0, 0);
 
             try {
                 Thread.sleep(16);
