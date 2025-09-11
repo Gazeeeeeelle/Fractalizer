@@ -121,6 +121,29 @@ abstract class Sets {
             ite++;
         }
     }
+    public static void setZ(double a, double b){
+        Sets.z1x = a;
+        Sets.z1y = b;
+    }
+    public static void setZR(double a){
+        Sets.z1x = a;
+    }
+    public static void setZI(double b){
+        Sets.z1y = b;
+    }
+    public static void setZ(int[] pixelPosition){
+        if (Controller.isCool(200)) {
+            try {
+                Sets.setZ(
+                        Renderer.p2cx(pixelPosition[0]),
+                        Renderer.p2cy(pixelPosition[1])
+                );
+                Renderer.clearImage();
+            } catch (NullPointerException exception){
+                //pass
+            }
+        }
+    }
 }
 
 

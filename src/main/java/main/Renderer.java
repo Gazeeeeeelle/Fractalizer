@@ -253,6 +253,18 @@ class Renderer extends Thread {
                 (toY+fromY)/2,
         };
     }
+    static void centerAtPixel(int[] pos){
+        double x = Renderer.p2cx(pos[0]);
+        double y = Renderer.p2cy(pos[1]);
+        double dX = Renderer.toX - Renderer.fromX;
+        double dY = Renderer.toY - Renderer.fromY;
+        Renderer.setBounds(
+                x - dX / 2,
+                y - dY / 2,
+                x + dX / 2,
+                y + dY / 2
+        );
+    }
     static void zoomIn(double zoom){
         double[] c = getCenter();
         fromX += Math.abs(fromX-c[0]) * zoom;
@@ -328,6 +340,17 @@ class Renderer extends Thread {
         }
         return color;
     }
+    static void shiftColorPalette(int d){
+        int localPointer = Renderer.whichColorPalette + d;
+        if (localPointer < 0) {
+            Renderer.whichColorPalette = Renderer.colorPalettes.length - 1;
+            return;
+        }else if(localPointer > colorPalettes.length - 1){
+            Renderer.whichColorPalette = 0;
+            return;
+        }
+        Renderer.whichColorPalette = localPointer;
+    }
     static void screenshot(){
         File file = new File(
                 LocalDate.now()+"_" +
@@ -367,6 +390,12 @@ class Renderer extends Thread {
         toY   -= -dPixY*dy;
 
         clearImage(moveImage(-dx, -dy, img));
+    }
+    static void setBounds(double x1, double y1, double x2, double y2){
+        fromX = x1;
+        fromY = y1;
+        toX = x2;
+        toY = y2;
     }
     private static BufferedImage moveImage(int dx, int dy, BufferedImage img){
         BufferedImage local = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_INT_RGB);

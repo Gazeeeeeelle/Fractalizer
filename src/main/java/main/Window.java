@@ -5,16 +5,12 @@ import java.awt.*;
 import java.awt.event.*;
 
 class Window extends JFrame implements MouseMotionListener, MouseListener, KeyListener, MouseWheelListener {
-    static long time = System.currentTimeMillis();
-    static int width = 814;
-    static int height = 814;
-    static int jpWidth = 814;
-    static int jpHeight = 814;
+    static int
+            width = 814,
+            height = 814,
+            jpWidth = 814,
+            jpHeight = 814;
     static double defZoom = .5;
-    //814
-    //test wide res = 1536 x 814
-    //4k = 3840 x 2160
-    //8k = 7680 x 4320
     static JPanel Fractalizer = new JPanel();
     static JPanel panel = new JPanel();
     static Point mousePt = new Point(0, 0);
@@ -129,109 +125,20 @@ class Window extends JFrame implements MouseMotionListener, MouseListener, KeyLi
     }
     @Override
     public void keyPressed(KeyEvent e) {
-        Control.doAction(e);
-        switch (e.getKeyChar()) {
-            case 'g':
-
-                break;
-            case 'f':
-
-                break;
-            case 'o':
-                Renderer.resetRange();
-                Renderer.clearImage();
-                break;
-            case 'j':
-                Sets.julia ^= true;
-                Renderer.clearImage();
-                break;
-            case 'l':
-                Sets.connectLines ^= true;
-                Renderer.clearImage();
-                break;
-            case 'c':
-                double x = Fractalizer.getMousePosition().getX();
-                double y = Fractalizer.getMousePosition().getY();
-
-                x = Renderer.p2cx((int) x);
-                y = Renderer.p2cy((int) y);
-
-                double dX = Renderer.toX - Renderer.fromX;
-                double dY = Renderer.toY - Renderer.fromY;
-
-                Renderer.fromX = x - dX / 2;
-                Renderer.toX = x + dX / 2;
-                Renderer.fromY = y - dY / 2;
-                Renderer.toY = y + dY / 2;
-
-                Renderer.clearImage();
-                break;
-            case 'n':
-                Renderer.night ^= true;
-                Renderer.clearImage();
-                break;
-            case 'i':
-                System.out.println(Renderer.getInfo());
-                break;
-            case 'p':
-                Renderer.preCalcRange ^= true;
-                Renderer.clearImage();
-                break;
-            case 's':
-                Renderer.showPosition ^= true;
-                break;
-            case 'v':
-                if (!VideoRecorder.isRec) {
-                    VideoRecorder vr = new VideoRecorder();
-                    vr.start();
-                } else {
-                    VideoRecorder.isRec = false;
-                }
-                break;
-            case 'a':
-                Renderer.axis ^= true;
-                break;
+        Controller.operate(e);
+        try {
+            Renderer.setOfInterest = Integer.parseInt(String.valueOf(e.getKeyChar()));
+            Renderer.clearImage();
+        } catch (NumberFormatException exception) {
+            //pass
         }
-        switch (e.getKeyCode()) {
-            case KeyEvent.VK_RIGHT:
-                Sets.mode++;
-                Renderer.clearImage();
-                break;
-            case KeyEvent.VK_LEFT:
-                Sets.mode--;
-                Renderer.clearImage();
-                break;
-            case KeyEvent.VK_UP:
-                if (Renderer.whichColorPalette == Renderer.colorPalettes.length - 1) {
-                    Renderer.whichColorPalette = 0;
-                } else {
-                    Renderer.whichColorPalette++;
-                }
-                Renderer.clearImage();
-                break;
-            case KeyEvent.VK_DOWN:
-                if (Renderer.whichColorPalette == 0) {
-                    Renderer.whichColorPalette = Renderer.colorPalettes.length - 1;
-                } else {
-                    Renderer.whichColorPalette--;
-                }
-                Renderer.clearImage();
-                break;
-            case KeyEvent.VK_F2:
-                Renderer.screenshot();
-                break;
-            case KeyEvent.VK_F5:
-                Renderer.clearImage();
-                break;
-            default:
-                try {
-                    int set = Integer.parseInt(String.valueOf(e.getKeyChar()));
-                    Renderer.setOfInterest = set;
-                    Renderer.clearImage();
-                } catch (NumberFormatException exception) {
-                    //pass
-                }
-        }
+    }
+    public static int[] getMousePos(){
+        Point p = Fractalizer.getMousePosition();
+        return new int[]{
+                (int) (p.getX()),
+                (int) (p.getY())
+        };
     }
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
