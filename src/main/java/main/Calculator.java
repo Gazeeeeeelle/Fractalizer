@@ -6,6 +6,7 @@ class Calculator extends Thread{
     int order;
     int index;
     int precision = 0;
+    int n = 1;
     boolean purpose = true;
     Calculator(int order, int index){
         this.order = order;
@@ -61,13 +62,14 @@ class Calculator extends Thread{
                             //if the pixel isn't colored
                             if (Renderer.img.getRGB(x, y) == -16777216) {
                                 if (Sets.mode == Sets.FRACTAL) {
-                                    Renderer.draw_frac(x, y, precision);
+                                    Renderer.draw_frac(x, y, precision, n);
                                 } else if (Sets.mode == Sets.ABS) {
                                     Renderer.draw_dir(x, y);
                                 }
                             }
                         }
                     }
+                    n = (Renderer.night ? Sets.solN : 1);
                     if (Renderer.isOn && (Sets.mode == Sets.FRACTAL)) precision++;
                 }
             }

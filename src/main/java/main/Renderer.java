@@ -8,6 +8,8 @@ import java.io.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
+import static main.Sets.cleanCache;
+
 class Renderer extends Thread {
     static BufferedImage img = new BufferedImage(Window.jpWidth, Window.jpHeight, BufferedImage.TYPE_INT_RGB);
     private static final Graphics2D
@@ -88,16 +90,14 @@ class Renderer extends Thread {
         clearImage();
         System.out.println("Calculators started.");
     }
-    static void draw_frac(int x, int y, int precision){
-        if (Sets.calc_frac(x, y, precision)) {
+    static void  draw_frac(int x, int y, int precision, int times){
+        if (Sets.calc_frac(x, y, 0, times)) {
             if (night) {
                 img.setRGB(x, y, -1);
             } else {
-                img.setRGB(
+                 img.setRGB(
                         x, y,
-                        colorPalettes[whichColorPalette] [
-                                precision % colorPalettes[whichColorPalette].length
-                                ]
+                        colorPalettes[whichColorPalette][precision % colorPalettes[whichColorPalette].length]
                 );
             }
         }
@@ -192,8 +192,10 @@ class Renderer extends Thread {
     static int limitToRange(int value, int min, int max){
         return Math.max(Math.min(value, max), min);
     }
-    static boolean isDraw(int x, int y, int precision){
-        return Sets.calc_frac(x, y, precision);
+    static boolean isDraw(int x, int y, int times){
+        Sets.cache[1][x][y][0] = 0;
+        Sets.cache[1][x][y][1] = 0;
+        return Sets.calc_frac(x, y, 1, times);
     }
     private static void initialize(){
         AffineTransform af = new AffineTransform();
@@ -208,6 +210,7 @@ class Renderer extends Thread {
             int p = (preCalcRange ? findPrecision() : 0);
             for (Calculator c : calc) {
                 c.precision = (night ? Sets.solN : p);
+                c.n = (night ? Sets.solN : p);
             }
         }else{
             for (Calculator c : calc) {
@@ -222,7 +225,7 @@ class Renderer extends Thread {
         for(;;){
             for (int x = 0; x < img.getWidth(); x+=sp+1) {
                 for (int y = 0; y < img.getHeight(); y+=sp+1) {
-                    if(isDraw(x, y, p)) return p;
+                    if(isDraw(x, y, p)) return p-1;
                 }
             }
             p++;
@@ -232,6 +235,8 @@ class Renderer extends Thread {
     static void clearImage(){
         isOn = false;
         resetPrecision();
+        cleanCache(0); //FIXME
+        cleanCache(1); //FIXME
         Graphics imgG = img.getGraphics();
         imgG.setColor(Color.black);
         imgG.fillRect(0,0, main.Window.jpWidth, main.Window.jpHeight);
@@ -240,6 +245,8 @@ class Renderer extends Thread {
     private static void clearImage(BufferedImage image){
         Graphics imgG = img.getGraphics();
         imgG.drawImage(image, 0, 0, null);
+        cleanCache(0); //FIXME
+        cleanCache(1); //FIXME
     }
     static void resetRange(){
         fromX = initialCoordinates[0];

@@ -5,10 +5,29 @@ abstract class Sets {
                      ABS = 2,
                      DIST = 3;
     static int mode = FRACTAL;
-    static boolean julia = false;
+    static boolean
+                julia = false,
+                connectLines = false;
     static double z1x = 0.0, z1y = 0.0;
     static int solN = 100;
-    static boolean connectLines = false;
+    static double[][][][] cache = new double[2][Window.jpWidth][Window.jpHeight][2];
+    static {
+        cleanCache(0);
+        cleanCache(1);
+    }
+    static boolean calc_frac(int x, int y, int index, int n){
+        return switch (Renderer.setOfInterest) {
+            case 1 ->
+                    cached_mandelbrotFunction(x, y, index, n);
+            case 2 ->
+                    cached_burningShipFunction(x, y, index, n);
+            case 3 ->
+                    cached_celticFunction(x, y, index, n);
+            case 4 ->
+                    cached_qMandelbrotFunction(x, y, index, n);
+            default -> false;
+        };
+    }
     static double[] calc_dist(double x, double y, int set){
         return switch (set) {
             case 1 ->
@@ -47,31 +66,80 @@ abstract class Sets {
             default -> new double[]{0, 0};
         };
     }
-    static boolean calc_frac(int pixelX, int pixelY, int precision){
-        return !julia ?
-                switch (Renderer.setOfInterest) {
-                    case 1 ->
-                            mandelbrotFunction(z1x, z1y, Renderer.p2cx(pixelX), Renderer.p2cy(pixelY), precision, 0);
-                    case 2 ->
-                            burningShipFunction(z1x, z1y, Renderer.p2cx(pixelX), Renderer.p2cy(pixelY), precision, 0);
-                    case 3 ->
-                            celticFunction(z1x, z1y, Renderer.p2cx(pixelX), Renderer.p2cy(pixelY), precision, 0);
-                    case 4 ->
-                            qMandelFunction(z1x, z1y, Renderer.p2cx(pixelX), Renderer.p2cy(pixelY), precision, 0);
-                    default -> false;
-                }
-                :
-                switch (Renderer.setOfInterest) {
-                    case 1 ->
-                            mandelbrotFunction(Renderer.p2cx(pixelX), Renderer.p2cy(pixelY), z1x, z1y, precision, 0);
-                    case 2 ->
-                            burningShipFunction(Renderer.p2cx(pixelX), Renderer.p2cy(pixelY), z1x, z1y, precision, 0);
-                    case 3 ->
-                            celticFunction(Renderer.p2cx(pixelX), Renderer.p2cy(pixelY), z1x, z1y, precision, 0);
-                    case 4 ->
-                            qMandelFunction(Renderer.p2cx(pixelX), Renderer.p2cy(pixelY), z1x, z1y, precision, 0);
-                    default -> false;
-                };
+    public static void cleanCache(int index){
+        for (int x = 0; x < Window.jpWidth; x++) {
+            for (int y = 0; y < Window.jpWidth; y++) {
+                cache[index][x][y][0] = z1x;
+                cache[index][x][y][1] = z1y;
+            }
+        }
+    }
+    private static boolean cached_mandelbrotFunction(int x, int y, int index, int times){
+        double c1 = Renderer.p2cx(x);
+        double c2 = Renderer.p2cy(y);
+        double z1 = cache[index][x][y][0];
+        double z2 = cache[index][x][y][1];
+        for (int i = 0; i < times; i++) {
+            z1 = z1*z1-(z2*z2)+c1;
+            z2 = (2*cache[index][x][y][0]*z2)+c2;
+            if(z1*z1 + z2*z2 > 4) {
+                return true;
+            }
+            cache[index][x][y][0] = z1;
+            cache[index][x][y][1] = z2;
+        }
+        return false;
+    }
+    private static boolean cached_burningShipFunction(int x, int y, int index, int times){
+        double c1 = Renderer.p2cx(x);
+        double c2 = Renderer.p2cy(y) * -1;// "*-1" for flipping vertically
+        double z1 = cache[index][x][y][0];
+        double z2 = cache[index][x][y][1];
+        for (int i = 0; i < times; i++) {
+            z1 = Math.abs(z1);
+            z2 = Math.abs(z2);
+            z1 = (z1 * z1 - z2 * z2) + c1;
+            z2 = (2 * Math.abs(cache[index][x][y][0] * z2)) + c2;
+            if (z1 * z1 + z2 * z2 > 4) return true;
+            cache[index][x][y][0] = z1;
+            cache[index][x][y][1] = z2;
+        }
+        return false;
+    }
+    //double k;
+    //        for(;;) {
+    //            k = z2;
+    //            z2 = Math.abs((z1*z1) - (z2*z2)) + c1;
+    //            z1 = z1 * k * 2 + c2;
+    //            if(z1*z1 + z2*z2 > 4) return true;
+    //            if(ite >= precision) return false;
+    //            ite++;
+    //        }
+    private static boolean cached_celticFunction(int x, int y, int index, int times){
+        double c1 = Renderer.p2cx(x);
+        double c2 = Renderer.p2cy(y);
+        double z1 = cache[index][x][y][0];
+        double z2 = cache[index][x][y][1];
+        for (int i = 0; i < times; i++) {
+            z2 = Math.abs((z1*z1) - (z2*z2)) + c1;
+            z1 = z1 * cache[index][x][y][1] * 2 + c2;
+            if (z1 * z1 + z2 * z2 > 4) return true;
+            cache[index][x][y][0] = z1;
+            cache[index][x][y][1] = z2;
+        }
+        return false;
+    }
+    private static boolean burningShipFunction(double z1, double z2, double c1, double c2, int precision, int ite){
+        double k;
+        for(;;) {
+            k = z1 = Math.abs(z1);
+            z2 = Math.abs(z2);
+            z1 = (z1*z1-z2*z2)+c1;
+            z2 = (2*k*z2)+c2;
+            if(z1*z1 + z2*z2 > 4) return true;
+            if(ite >= precision) return false;
+            ite++;
+        }
     }
     private static boolean mandelbrotFunction(double z1, double z2, double c1, double c2, int precision, int ite){
         double t;
@@ -84,29 +152,34 @@ abstract class Sets {
             ite++;
         }
     }
-    private static boolean qMandelFunction(double z1, double z2, double c1, double c2, int precision, int ite) {
-        double abs2 = c1*c1+c2*c2;
-        c1 = c1/abs2;
-        c2 = -c2/abs2;
-        double t;
-        for(;;) {
-            t = z1;
-            z1 = z1*z1-(z2*z2)+c1;
-            z2 = (2*t*z2)+c2;
-            if(z1*z1 + z2*z2 > 4) return true;
-            if(ite >= precision) return false;
-            ite++;
+    private static boolean cached_qMandelbrotFunction(int x, int y, int index, int times){
+        double c1 = Renderer.p2cx(x);
+        double c2 = Renderer.p2cy(y);
+        double z1 = cache[index][x][y][0];
+        double z2 = cache[index][x][y][1];
+        double abs2 = c1 * c1 + c2 * c2;
+        c1 = c1 / abs2;
+        c2 = -c2 / abs2;
+        for (int i = 0; i < times; i++) {
+            z1 = z1 * z1 - (z2 * z2) + c1;
+            z2 = (2 * cache[index][x][y][0] * z2) + c2;
+            if (z1 * z1 + z2 * z2 > 4) return true;
+            cache[index][x][y][0] = z1;
+            cache[index][x][y][1] = z2;
         }
+        return false;
     }
-    private static boolean burningShipFunction(double z1, double z2, double c1, double c2, int precision, int ite){
-        double k;
-        for(;;) {
-            k = z1 = Math.abs(z1);
-            z2 = Math.abs(z2);
-            z1 = (z1*z1-z2*z2)+c1;
-            z2 = (2*k*z2)+c2;
-            if(z1*z1 + z2*z2 > 4) return true;
-            if(ite >= precision) return false;
+    private static boolean qMandelFunction(double z1, double z2, double c1, double c2, int precision, int ite) {
+        double abs2 = c1 * c1 + c2 * c2;
+        c1 = c1 / abs2;
+        c2 = -c2 / abs2;
+        double t;
+        for (; ; ) {
+            t = z1;
+            z1 = z1 * z1 - (z2 * z2) + c1;
+            z2 = (2 * t * z2) + c2;
+            if (z1 * z1 + z2 * z2 > 4) return true;
+            if (ite >= precision) return false;
             ite++;
         }
     }
