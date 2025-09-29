@@ -3,7 +3,6 @@ package main;
 class ComplexMath {
     static double[] zetaFunction(double a, double b, int depth){
         double[] ret = new double[]{0,0};
-        //This gets the region that diverges to infinity off
         if(a<1) return ret;
         double ka;
         double blnk;
@@ -16,6 +15,10 @@ class ComplexMath {
             ret[1] -= ka*s;
         }
         return ret;
+    }
+    static double[] invZetaFunction(double a, double b, int depth){
+        double[] ret = zetaFunction(a, b, depth);
+        return complexPow(ret[0], ret[1], -1, 0);
     }
     static double[] zetaFunctionQ(double a, double b, double c, double d, int depth){
         double[] ret = new double[]{0,0};

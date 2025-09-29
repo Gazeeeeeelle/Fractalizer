@@ -193,8 +193,7 @@ class Renderer extends Thread {
         return Math.max(Math.min(value, max), min);
     }
     static boolean isDraw(int x, int y, int times){
-        Sets.cache[1][x][y][0] = 0;
-        Sets.cache[1][x][y][1] = 0;
+        Sets.cleanCache(x, y, 1);
         return Sets.calc_frac(x, y, 1, times);
     }
     private static void initialize(){
@@ -210,7 +209,7 @@ class Renderer extends Thread {
             int p = (preCalcRange ? findPrecision() : 0);
             for (Calculator c : calc) {
                 c.precision = (night ? Sets.solN : p);
-                c.n = (night ? Sets.solN : p);
+                c.n = (night ? Sets.solN : p+1);
             }
         }else{
             for (Calculator c : calc) {
@@ -225,7 +224,7 @@ class Renderer extends Thread {
         for(;;){
             for (int x = 0; x < img.getWidth(); x+=sp+1) {
                 for (int y = 0; y < img.getHeight(); y+=sp+1) {
-                    if(isDraw(x, y, p)) return p-1;
+                    if(isDraw(x, y, p+1)) return p;
                 }
             }
             p++;

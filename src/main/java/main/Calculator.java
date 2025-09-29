@@ -14,6 +14,7 @@ class Calculator extends Thread{
     }
     @Override
     public void run(){
+        long time = System.currentTimeMillis();
         double[] c;
         double[] c2;
         double density = 5;
@@ -70,7 +71,15 @@ class Calculator extends Thread{
                         }
                     }
                     n = (Renderer.night ? Sets.solN : 1);
+//                    n = (Renderer.night ? Sets.solN : 100000);
                     if (Renderer.isOn && (Sets.mode == Sets.FRACTAL)) precision++;
+
+//                    if(System.currentTimeMillis() - time > 100){
+//                        System.out.println("DONE: " + (System.currentTimeMillis() - time) + "ms");
+//                        time = System.currentTimeMillis();
+//                        Renderer.clearImage();
+//                    }
+
                 }
             }
             try {
