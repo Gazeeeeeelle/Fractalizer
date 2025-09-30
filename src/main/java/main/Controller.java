@@ -28,13 +28,12 @@ abstract class Controller {
                 })
                 .map("C", () -> {
                     Renderer.centerAtPixel(Window.getMousePos());
-                    Renderer.clearImage();
                 })
                 .map("N", () -> {
                     Renderer.night ^= true;
                     Renderer.clearImage();
                 })
-                .map("I", () -> System.out.println(Renderer.getInfo()))
+                .map("I", () -> System.out.println(Sets.getInfo()))
                 .map("P", () -> {
                     Renderer.preCalcRange ^= true;
                     Renderer.clearImage();
@@ -58,11 +57,11 @@ abstract class Controller {
                     Renderer.clearImage();
                 })
                 .map("Up", () -> {
-                    Renderer.shiftColorPalette(1);
+                    Colors.shiftColorPalette(1);
                     Renderer.clearImage();
                 })
                 .map("Down", () -> {
-                    Renderer.shiftColorPalette(-1);
+                    Colors.shiftColorPalette(-1);
                     Renderer.clearImage();
                 })
                 .map("F5", Renderer::clearImage)

@@ -166,8 +166,8 @@ class InputReceiver extends Thread{
                         int n = Integer.parseInt(answer);
                         answer = ask("Priority of calculators(threads): ");
                         int p = Integer.parseInt(answer);
-                        Renderer.destroyCalculatorSet();
-                        Renderer.buildCalculatorSet(n, p);
+                        Calculator.destroyCalculatorSet();
+                        Calculator.buildCalculatorSet(n, p);
                     } catch (NumberFormatException e) {
                         return 1;
                     }

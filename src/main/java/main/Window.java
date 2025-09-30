@@ -8,9 +8,8 @@ class Window extends JFrame implements MouseMotionListener, MouseListener, KeyLi
     static int
             width = 814,
             height = 814,
-            jpWidth = 814,
-            jpHeight = 814;
-    static double defZoom = .5;
+            jpWidth = 814, //814 //FIXME
+            jpHeight = 814; //814 //FIXME
     static JPanel Fractalizer = new JPanel();
     static JPanel panel = new JPanel();
     static Point mousePt = new Point(0, 0);
@@ -68,8 +67,8 @@ class Window extends JFrame implements MouseMotionListener, MouseListener, KeyLi
                     safe = false;
                 }
                 if (safe) {
-                    Renderer.destroyCalculatorSet();
-                    Renderer.buildCalculatorSet(n, p);
+                    Calculator.destroyCalculatorSet();
+                    Calculator.buildCalculatorSet(n, p);
                 }
             });
             panel.add(tf_threads);
@@ -102,17 +101,15 @@ class Window extends JFrame implements MouseMotionListener, MouseListener, KeyLi
     }
     @Override
     public void mouseDragged(MouseEvent e) {
-        Renderer.isOn = false;
         int dx = e.getX() - (int) mousePt.getX();
         int dy = e.getY() - (int) mousePt.getY();
         Renderer.move(dx, dy);
         mousePt = e.getPoint();
-
     }
     @Override
     public void mousePressed(MouseEvent e) {
         if (e.getButton() == 2) {
-            Renderer.topographicStep = .1;
+            Sets.topographicStep = .1;
             Renderer.clearImage();
         } else {
             mousePt = e.getPoint();
@@ -120,15 +117,15 @@ class Window extends JFrame implements MouseMotionListener, MouseListener, KeyLi
     }
     @Override
     public void mouseReleased(MouseEvent e) {
-        Renderer.resetPrecision();
-        Renderer.isOn = true;
+        Calculator.resetPrecision();
+        Calculator.isOn = true;
     }
     @Override
     public void keyPressed(KeyEvent e) {
         Controller.operate(e);
         try {
-            Renderer.setOfInterest = Integer.parseInt(String.valueOf(e.getKeyChar()));
-            Renderer.clearImage();
+            int set = Integer.parseInt(String.valueOf(e.getKeyChar()));
+            Renderer.chooseSet(set);
         } catch (NumberFormatException exception) {
             //pass
         }
@@ -144,17 +141,17 @@ class Window extends JFrame implements MouseMotionListener, MouseListener, KeyLi
     public void mouseWheelMoved(MouseWheelEvent e) {
         if (e.getWheelRotation() == 1) {
             if (e.isShiftDown()) {
-                Renderer.topographicStep /= 2;
+                Sets.topographicStep /= 2;
                 Renderer.clearImage();
             } else {
-                Renderer.zoomOut(defZoom);
+                Renderer.zoomOut();
             }
         } else {
             if (e.isShiftDown()) {
-                Renderer.topographicStep *= 2;
+                Sets.topographicStep *= 2;
                 Renderer.clearImage();
             } else {
-                Renderer.zoomIn(defZoom);
+                Renderer.zoomIn();
             }
         }
     }

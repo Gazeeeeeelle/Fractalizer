@@ -1,6 +1,8 @@
 package main;
 
 abstract class Sets {
+    static int setOfInterest = 1;
+    static double topographicStep = .1;
     static final int FRACTAL = 1,
                      ABS = 2,
                      DIST = 3;
@@ -16,7 +18,7 @@ abstract class Sets {
         cleanCache(1);
     }
     static boolean calc_frac(int x, int y, int index, int n){
-        return switch (Renderer.setOfInterest) {
+        return switch (setOfInterest) {
             case 1 -> cached_mandelbrot(x, y, index, n);
             case 2 -> cached_burningShip(x, y, index, n);
             case 3 -> cached_celtic(x, y, index, n);
@@ -40,7 +42,7 @@ abstract class Sets {
     static double[] calc_dir(int pixelX, int pixelY){
         double x = Renderer.p2cx(pixelX);
         double y = Renderer.p2cy(pixelY);
-        return switch (Renderer.setOfInterest) {
+        return switch (setOfInterest) {
             case 1 -> ComplexMath.fibonacci_C(x, y);
             case 2 -> ComplexMath.complexPow(x, y, x, y);
             case 3 -> ComplexMath.cos(x, y);
@@ -227,64 +229,27 @@ abstract class Sets {
             }
         }
     }
-    private static boolean burningShipFunction(double z1, double z2, double c1, double c2, int precision, int ite){
-        double k;
-        for(;;) {
-            k = z1 = Math.abs(z1);
-            z2 = Math.abs(z2);
-            z1 = (z1*z1-z2*z2)+c1;
-            z2 = (2*k*z2)+c2;
-            if(z1*z1 + z2*z2 > 4) return true;
-            if(ite >= precision) return false;
-            ite++;
+    static String getInfo(){
+        String ret = "";
+        ret += "----------------------------------------------------------------"+"\n";
+        ret += (Renderer.fromX+" -> "+Renderer.toX+", "+Renderer.fromY+"i -> "+Renderer.toY+"i"+"\n");
+        ret += ("zoom: "+ Renderer.getZoom()+"\n");
+        if(Sets.mode == Sets.FRACTAL) {
+            ret += ("Set: " +
+                    switch (Sets.setOfInterest) {
+                        case 1 -> "Mandelbrot Set";
+                        case 2 -> "Burning Ship Set";
+                        case 3 -> "Celtic Set";
+                        case 4 -> "Inverse Mandelbrot Set";
+                        default -> "Set not found.";
+                    }
+                    + "\n"
+            );
+            ret += ("Is Julia Set On: " + Sets.julia + "\n");
         }
-    }
-    private static boolean mandelbrotFunction_j(double z1, double z2, double c1, double c2, int precision, int ite){
-        double t;
-        for(;;) {
-            t = z1;
-            z1 = z1*z1-(z2*z2)+c1;
-            z2 = (2*t*z2)+c2;
-            if(z1*z1 + z2*z2 > 4) return true;
-            if(ite >= precision) return false;
-            ite++;
-        }
-    }
-    private static boolean mandelbrotFunction(double z1, double z2, double c1, double c2, int precision, int ite){
-        double t;
-        for(;;) {
-            t = z1;
-            z1 = z1*z1-(z2*z2)+c1;
-            z2 = (2*t*z2)+c2;
-            if(z1*z1 + z2*z2 > 4) return true;
-            if(ite >= precision) return false;
-            ite++;
-        }
-    }
-    private static boolean qMandelFunction(double z1, double z2, double c1, double c2, int precision, int ite) {
-        double abs2 = c1 * c1 + c2 * c2;
-        c1 = c1 / abs2;
-        c2 = -c2 / abs2;
-        double t;
-        for (; ; ) {
-            t = z1;
-            z1 = z1 * z1 - (z2 * z2) + c1;
-            z2 = (2 * t * z2) + c2;
-            if (z1 * z1 + z2 * z2 > 4) return true;
-            if (ite >= precision) return false;
-            ite++;
-        }
-    }
-    private static boolean celticFunction(double z1, double z2, double c1, double c2, int precision, int ite){
-        double k;
-        for(;;) {
-            k = z1;
-            z1 = z1 * z2 * 2 + c2;
-            z2 = Math.abs((k*k) - (z2*z2)) + c1;
-            if(z1*z1 + z2*z2 > 4) return true;
-            if(ite >= precision) return false;
-            ite++;
-        }
+        ret += ("Z: " + Sets.z1x + "+" + Sets.z1y + "i" + "\n");
+        ret += ("----------------------------------------------------------------");
+        return ret;
     }
 }
 
