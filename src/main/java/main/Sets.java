@@ -23,40 +23,41 @@ abstract class Sets {
             case 2 -> cached_burningShip(x, y, index, n);
             case 3 -> cached_celtic(x, y, index, n);
             case 4 -> cached_invMandelbrot(x, y, index, n);
-            case 5 -> cached_mandelbrot_short(x, y, index, n);
+            case 5 -> cached_gahbrot(x, y, index, n);
             default -> false;
         };
     }
-    static double[] calc_dist(double x, double y, int set){
+    static double[] calc_dir(double x, double y, int set){
         return switch (set) {
             case 1 -> ComplexMath.complexPow(x, y, z1x, z1y);
             case 2 -> ComplexMath.complexPow(x, y, x, y);
             case 3 -> ComplexMath.cos(x, y);
             case 4 -> ComplexMath.sin(x, y);
-            case 5 -> ComplexMath.zetaFunction(x, y, 3000);
-            case 6 -> new double[]{y, ComplexMath.zetaFunction(x, y, (int)z1x)[0]};
-            case 7 -> new double[]{y, ComplexMath.zetaFunction(x, y, (int)z1x)[1]};
             default -> new double[]{0, 0};
         };
     }
-    static double[] calc_dir(int pixelX, int pixelY){
-        double x = Renderer.p2cx(pixelX);
-        double y = Renderer.p2cy(pixelY);
-        return switch (setOfInterest) {
-            case 1 -> ComplexMath.fibonacci_C(x, y);
-            case 2 -> ComplexMath.complexPow(x, y, x, y);
-            case 3 -> ComplexMath.cos(x, y);
-            case 4 -> ComplexMath.sin(x, y);
-            case 5 -> ComplexMath.zetaFunction(x, y, (int)(100*z1x));
-            case 6 -> ComplexMath.invZetaFunction(x, y, (int)(100*z1x));
-//            case 6 -> ComplexMath.complexPow(x, y, z1x, z1y);
-            default -> new double[]{0, 0};
-        };
+    static boolean calc_abs(int x, int y, int index, int nth, boolean paint){
+        if(paint){
+            switch (setOfInterest) {
+                case 5 -> ComplexMath.zetaFunction(x, y, index, nth);
+                default -> {return false;}
+            }
+            return true;
+        }else{
+            switch (setOfInterest) {
+                case 1 -> ComplexMath.fibonacci_C(x, y, index);
+                case 2 -> ComplexMath.complexPow(x, y, x, y);
+                case 3 -> ComplexMath.cos(x, y);
+                case 4 -> ComplexMath.sin(x, y);
+                case 5 -> ComplexMath.zetaFunction(x, y, index, nth);
+            }
+            return true;
+        }
     }
     public static void cleanCache(int index){
         for (int x = 0; x < Window.jpWidth; x++) {
             for (int y = 0; y < Window.jpWidth; y++) {
-                if(julia) {
+                if(julia && (Sets.mode == Sets.FRACTAL)) {
                     cache[index][x][y][0] = Renderer.p2cx(x);
                     cache[index][x][y][1] = Renderer.p2cy(y);
                 }else{
@@ -67,7 +68,7 @@ abstract class Sets {
         }
     }
     public static void cleanCache(int x, int y, int index){
-        if(julia) {
+        if(julia && (Sets.mode == Sets.FRACTAL)) {
             cache[index][x][y][0] = Renderer.p2cx(x);
             cache[index][x][y][1] = Renderer.p2cy(y);
         }else{
@@ -96,24 +97,7 @@ abstract class Sets {
         }
         return false;
     }
-    public static void main(String[] args) {
-        int n = Integer.MAX_VALUE;
-        cleanCache(1);
-        long time;
-        time = System.currentTimeMillis();
-        Sets.cached_mandelbrot(400, 440, 1, n);
-//        System.out.println(System.currentTimeMillis()-time);
-        cleanCache(1);
-        time = System.currentTimeMillis();
-        Sets.cached_mandelbrot_short(400, 440, 1, n);
-        System.out.println(System.currentTimeMillis()-time);
-        cleanCache(1);
-        time = System.currentTimeMillis();
-        Sets.cached_mandelbrot(400, 440, 1, n);
-        System.out.println(System.currentTimeMillis()-time);
-
-    }
-    private static boolean cached_mandelbrot_short(int x, int y, int index, int times) {
+    private static boolean cached_gahbrot(int x, int y, int index, int times) {
         double c1 = z1x;
         double c2 = z1y;
         if (!julia) {
@@ -161,9 +145,9 @@ abstract class Sets {
             z2 = Math.abs(z2);
             z1 = (z1 * z1 - z2 * z2) + c1;
             z2 = (2 * Math.abs(cache[index][x][y][0] * z2)) + c2;
-            if (z1 * z1 + z2 * z2 > 4) return true;
             cache[index][x][y][0] = z1;
             cache[index][x][y][1] = z2;
+            if (z1 * z1 + z2 * z2 > 4) return true;
         }
         return false;
     }

@@ -11,13 +11,17 @@ import java.time.LocalTime;
 import static main.Sets.cleanCache;
 
 class Renderer extends Thread {
+    static boolean special = false;
     public static final int
             w = Window.jpWidth,
             h = Window.jpHeight;
     static BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
     static BufferedImage img_black = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+    static BufferedImage ovr = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+    static BufferedImage ovr_blank = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
     private static final Graphics2D
             img_g = (Graphics2D) img.getGraphics(),
+            ovr_g = (Graphics2D) ovr.getGraphics(),
             g = (Graphics2D) Window.Fractalizer.getGraphics();
     static double //Rendering bounds:
             fromX = ((double) w/ h * -2),
@@ -36,14 +40,12 @@ class Renderer extends Thread {
         Calculator.buildCalculatorSet(1, 1);
         while(true){
 
-//            FIXME: Redo the axis code.
-//            if(axis) {
-//                g.setColor(Color.white);
-//                g.drawLine(c2px(0), c2py(fromY), c2px(0), c2py(toY));
-//                g.drawLine(c2px(fromX), c2py(0), c2px(toX), c2py(0));
-//            }
-
-            g.drawImage(img, null, 0, 0);
+            if(axis) {
+                drawAxis();
+                g.drawImage(imgUnion(img, ovr), 0, 0, null);
+            }else{
+                g.drawImage(img, 0, 0, null);
+            }
 
             try {
                 Thread.sleep(16);
@@ -52,6 +54,68 @@ class Renderer extends Thread {
             }
 
         }
+    }
+    private static BufferedImage imgUnion(BufferedImage... images){
+        int w = images[0].getWidth();
+        int h = images[0].getHeight();
+        BufferedImage ret = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = (Graphics2D) ret.getGraphics();
+        for (int i = 0; i < images.length; i++) {
+            if(images[i].getWidth() != w || images[i].getHeight() != h){
+                throw new IllegalArgumentException("Images do not match in size.");
+            }
+            g.drawImage(images[i], 0, 0, null);
+        }
+        return ret;
+    }
+    private static void drawAxis(){
+        ovr.setData(ovr_blank.getRaster());
+        ovr_g.setColor(Color.white);
+        ovr_g.drawLine(
+                c2px(0),
+                c2py(toY),
+                c2px(0),
+                c2py(fromY)
+        );
+        ovr_g.drawLine(
+                c2px(fromX),
+                c2py(0),
+                c2px(toX),
+                c2py(0)
+        );
+        numbers();
+        g.drawImage(ovr, 0,0, null);
+    }
+    private static void numbers(){
+        ovr_g.setColor(Color.white);
+        double delta = findDelta();
+        double dpx = p2cx(1)-p2cx(0);
+        for (int x = 0; x < w; x++) {
+            if(mod(p2cx(x), delta) <= dpx){
+                ovr_g.drawString(String.valueOf(roundTo(p2cx(x), delta)), x, c2py(0));
+            }
+        }
+        for (int y = 0; y < h; y++) {
+            if(mod(p2cy(y), delta) <= dpx){
+                ovr_g.drawString(roundTo(p2cy(y), delta)+"i", c2px(0), y);
+            }
+        }
+    }
+    private static double findDelta(){
+        int d = 2;
+        return Math.pow(2, ((int)log2(toX-fromX) - d));
+    }
+    private static double log2(double a){
+        return Math.log(a)/Math.log(2);
+    }
+    private static double difference(double a, double b){
+        return Math.abs(a-b);
+    }
+    private static double roundTo(double a, double b){
+        return ((int)(a/b))*b;
+    }
+    private static double mod(double a, double b){
+        return difference(a,b*(int)(a/b));
     }
     public static void chooseSet(int set){
         turnOff();
@@ -72,14 +136,27 @@ class Renderer extends Thread {
                         x, y,
                         Colors.getColor(precision)
                 );
+//                img.setRGB(
+//                        x, y,
+//                        Colors.getColorDir(Sets.cache[0][x][y])
+//                );
             }
         }
     }
-    static void draw_dir(int x, int y){
-        img.setRGB(
-                x, y,
-                Colors.getColorDir(Sets.calc_dir(x, y))
-        );
+    static void draw_abs(int x, int y, int index, int nth, boolean paint){
+        if(Sets.calc_abs(x, y, index, nth, paint)) {
+            if(Sets.julia){
+                img.setRGB(
+                        x, y,
+                        Colors.getColorDir(ComplexMath.complexPow(Sets.cache[index][x][y][0], Sets.cache[index][x][y][1], -1, 0) )
+                );
+            }else {
+                img.setRGB(
+                        x, y,
+                        Colors.getColorDir(Sets.cache[index][x][y])
+                );
+            }
+        }
     }
     static void draw_dot(double[] z, Color color){
         if(z[0] > Renderer.fromX && z[0] < Renderer.toX &&
@@ -147,7 +224,8 @@ class Renderer extends Thread {
                 h/2,
         };
     }
-    static void centerAtPixel(int[] pos){
+    static void centerAtPixel(int... pos){
+        assert pos.length == 2;
         Renderer.move(
                 getPixelCenter()[0] - pos[0],
                 getPixelCenter()[1] - pos[1]
@@ -187,8 +265,8 @@ class Renderer extends Thread {
         BufferedImage ret = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
         int dw = w/4;
         int dh = h/4;
-        for (int x = 0; x <= dw*2; x++) {
-            for (int y = 0; y <= dh*2; y++) {
+        for (int x = 0; x < dw*2; x++) {
+            for (int y = 0; y < dh*2; y++) {
                 ret.setRGB(x*2, y*2, img.getRGB(dw + x, dh + y));
             }
         }
@@ -198,9 +276,9 @@ class Renderer extends Thread {
         BufferedImage ret = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
         int dw = w/4;
         int dh = h/4;
-        for (int x = 0; x <= dw*2; x++) {
-            for (int y = 0; y <= dh*2; y++) {
-                ret.setRGB(dw+x, dw+y, img.getRGB(x * 2, y * 2));
+        for (int x = 0; x < dw*2; x++) {
+            for (int y = 0; y < dh*2; y++) {
+                ret.setRGB(dw+x, dh+y, img.getRGB(x * 2, y * 2));
             }
         }
         return ret;

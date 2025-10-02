@@ -14,6 +14,10 @@ abstract class Controller {
                     }
                 })
                 .map("F", () -> Sets.setZ(Window.getMousePos()))
+                .map("E", () -> {
+                    Renderer.special ^= true;
+                    Renderer.clearImage();
+                })
                 .map("O", () -> {
                     Renderer.resetRange();
                     Renderer.clearImage();

@@ -1,24 +1,24 @@
 package main;
 
+import static main.Renderer.p2cx;
+import static main.Renderer.p2cy;
+
 class ComplexMath {
-    static double[] zetaFunction(double a, double b, int depth){
-        double[] ret = new double[]{0,0};
-        if(a<1) return ret;
-        double ka;
-        double blnk;
-        double s;
-        for (int k = 1; k < depth+1; k++) {
-            ka = Math.pow(k, -a);
-            blnk = b*Math.log(k);
-            s = Math.sin(blnk);
-            ret[0] += ka*Math.sqrt(1-s*s)*signC(blnk);
-            ret[1] -= ka*s;
-        }
-        return ret;
+    static void zetaFunction(int x, int y, int index, int nth){
+        double a = p2cx(x);
+        double b = p2cy(y);
+
+//        if(a<=1) return;
+
+        double ka = Math.pow(nth, -a);
+        double blnk = b*Math.log(nth);
+        double s = Math.sin(blnk);
+        Sets.cache[index][x][y][0] += ka*Math.sqrt(1-s*s)*signC(blnk);
+        Sets.cache[index][x][y][1] -= ka*s;
     }
-    static double[] invZetaFunction(double a, double b, int depth){
-        double[] ret = zetaFunction(a, b, depth);
-        return complexPow(ret[0], ret[1], -1, 0);
+    static double[] invZetaFunction(int x, int y, int index, int nth){
+        zetaFunction(x, y, index, nth);
+        return complexPow(Sets.cache[index][x][y][0], Sets.cache[index][x][y][1], -1, 0);
     }
     static double[] zetaFunctionQ(double a, double b, double c, double d, int depth){
         double[] ret = new double[]{0,0};
@@ -49,13 +49,22 @@ class ComplexMath {
         }
         return ret;
     }
+    static double[] inverse(double[] z){
+        double phi2 = -arg1(z[0], z[1]);;
+        double s = Math.sin(phi2);
+        z[0] = Math.sqrt(1-s*s)*signC(phi2)/abs(z);
+        z[1] = s/abs(z);
+        return z;
+    }
     private static int signC(double v){
         v %= (2*Math.PI);
         int n = (int)(2*v/Math.PI);
         if(n==1||n==2||n==-1||n==-2) return -1;
         return 1;
     }
-    static double[] fibonacci_C(double a, double b){
+    static void fibonacci_C(int x, int y, int index){
+        double a = p2cx(x);
+        double b = p2cy(y);
         double sqrt5 = Math.sqrt(5);
         double inv_sqrt5 = 1/sqrt5;
         double gamma = 1/2d*(1+sqrt5);
@@ -67,10 +76,8 @@ class ComplexMath {
         double ebPi = Math.exp(-Math.PI*b);
         double phi1 = b*lnGamma;
         double phi2 = b*lnDelta+Math.PI*a;
-        return new double[]{
-                inv_sqrt5*(gammaA*Math.cos(phi1)-deltaA*ebPi*Math.cos(phi2)),
-                inv_sqrt5*(gammaA*Math.sin(phi1)-deltaA*ebPi*Math.sin(phi2))
-        };
+        Sets.cache[index][x][y][0] = inv_sqrt5*(gammaA*Math.cos(phi1)-deltaA*ebPi*Math.cos(phi2));
+        Sets.cache[index][x][y][1] = inv_sqrt5*(gammaA*Math.sin(phi1)-deltaA*ebPi*Math.sin(phi2));
     }
     static double[] complexLog1(double a, double b){
         double lnAbs = Math.log(abs(a, b));

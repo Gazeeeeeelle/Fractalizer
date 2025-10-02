@@ -235,6 +235,34 @@ class InputReceiver extends Thread{
                     return 0;
                 }
         ));
+        commands.add(new Command(
+                "c|center",
+                "set center",
+                () -> {
+                    double dx = Renderer.toX-Renderer.fromX;
+                    double dy = Renderer.toY-Renderer.fromY;
+                    String answer = ask("Enter C: ");
+                    try {
+                        answer = answer.replaceAll(" ", "")
+                                .replaceAll("i", "")
+                                .replaceAll("\\+", ",");
+
+                        String[] split = answer.split(",");
+                        double c1 = Double.parseDouble(split[0]);
+                        double c2 = Double.parseDouble(split[1]);
+                        Renderer.setBounds(
+                                c1-dx/2,
+                                c1+dx/2,
+                                c2-dy/2,
+                                c2+dy/2
+                                );
+                        Renderer.clearImage();
+                    } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+                        return 1;
+                    }
+                    return 0;
+                }
+        ));
     }
     private static class Command{
         String name;

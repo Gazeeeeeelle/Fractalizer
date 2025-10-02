@@ -75,8 +75,6 @@ class Window extends JFrame implements MouseMotionListener, MouseListener, KeyLi
             panel.add(tf_priority);
             panel.add(b_sendThreadInfo);
         }
-
-
     }
     static JTextField createTextField(int x, int y, int w, int h, String s, ActionListener al) {
         JTextField tf = new JTextField();

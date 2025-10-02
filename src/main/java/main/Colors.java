@@ -1,6 +1,7 @@
 package main;
 
 abstract class Colors {
+    static int last;
     static int whichColorPalette = 0;
     static int[] //Color palettes:
             colors1 = {
@@ -27,7 +28,12 @@ abstract class Colors {
             grayTone
     };
     static int getColor(int n){
-        return colorPalettes[whichColorPalette][n % colorPalettes[whichColorPalette].length];
+        int c = colorPalettes[whichColorPalette][n % colorPalettes[whichColorPalette].length];
+        last = c;
+        return c;
+    }
+    static int getColor(){
+        return last;
     }
     private static int[] makeTone(double r, double g, double b, int minimumR, int minimumG, int minimumB, int size, boolean back, boolean invert){
         minimumR = (int) ((double) minimumR * r);
@@ -96,7 +102,44 @@ abstract class Colors {
         }
         whichColorPalette = localPointer;
     }
-    static int getColorDir (double[] z){
+    static int getColorBW (double a){
+        int base = getColorDir(a, 0);
+        int r = (base>>16) & 0x000000ff;
+        int g = (base>>8) & 0x000000ff;
+        int b = (base) & 0x000000ff;
+        int gray = ((r+g+b)/3);
+        r = 0;
+        g = 0;
+        b = 0;
+        switch (whichColorPalette%4){
+            case 0:
+                r = gray;
+                g = gray;
+                b = gray;
+                break;
+            case 1:
+                r = gray;
+                break;
+            case 2:
+                g = gray;
+                break;
+            case 3:
+                b = gray;
+                break;
+        }
+        return (0xff<<24)+(r<<16)+(g<<8)+b;
+    }
+    static int getColorDir (double... z){
+        if(z==null) return 0;
+        assert z.length == 2;
+        for (int i = 0; i < z.length; i++) {
+            if(Double.isNaN(z[i])){
+                return 0xff000000;
+            }
+            if(Double.isInfinite(z[i])){
+                return 0xffffffff;
+            }
+        }
         double arg = Math.toDegrees(ComplexMath.arg1(z[0], z[1]));
         if(arg < 0) arg += 360;
         int r=0,

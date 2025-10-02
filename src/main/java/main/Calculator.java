@@ -25,9 +25,11 @@ class Calculator extends Thread{
             if(isOn) {
                 if(Sets.mode == Sets.DIST){
                     dir();
-                } else {
-                    frac();
+                } else if(Sets.mode==Sets.FRACTAL){
+                    fractal();
                     n = (Renderer.night ? Sets.solN : 1);
+                }else if (Sets.mode==Sets.ABS){
+                    abs();
                 }
                 precision++;
             }
@@ -38,18 +40,31 @@ class Calculator extends Thread{
             }
         }
     }
-    private void frac(){
+    private void fractal(){
         for (int y = 0; y < Window.jpHeight; y++) {
             for (int x = index; x < Window.jpWidth; x += order) {
                 if (!isOn) return;
                 //if the pixel isn't colored
-                if (img.getRGB(x, y) == -16777216) {
-                    if (Sets.mode == Sets.FRACTAL) {
-                        Renderer.draw_frac(x, y, precision, n);
-                    } else if (Sets.mode == Sets.ABS) {
-                        Renderer.draw_dir(x, y);
-                    }
+                if(!special) {
+                if (img.getRGB(x, y) == 0xff000000) {
+                    Renderer.draw_frac(x, y, precision, n);
                 }
+                }else {
+                    Sets.calc_frac(x, y, 0, n);
+                    img.setRGB(
+                            x, y,
+                            Colors.getColorBW(1 / ComplexMath.abs(Sets.cache[0][x][y]))
+                    );
+
+                }
+            }
+        }
+    }
+    private void abs(){
+        for (int y = 0; y < Window.jpHeight; y++) {
+            for (int x = index; x < Window.jpWidth; x += order) {
+                if(!isOn) return;
+                Renderer.draw_abs(x, y, 0, precision+1, (img.getRGB(x, y) != 0xff000000));
             }
         }
     }
@@ -65,18 +80,18 @@ class Calculator extends Thread{
                         if(!isOn) return;
 
                         //horizontal lines
-                        c = Sets.calc_dist(v, k / density, Sets.setOfInterest);
+                        c = Sets.calc_dir(v, k / density, Sets.setOfInterest);
                         if(Sets.connectLines) {
-                            c2 = Sets.calc_dist(v + var, k / density, Sets.setOfInterest);
+                            c2 = Sets.calc_dir(v + var, k / density, Sets.setOfInterest);
                             Renderer.draw_line(c, c2, Color.blue);
                         }else{
                             Renderer.draw_dot(c, Color.blue);
                         }
 
                         //vertical lines
-                        c = Sets.calc_dist(k / density, v, Sets.setOfInterest);
+                        c = Sets.calc_dir(k / density, v, Sets.setOfInterest);
                         if(Sets.connectLines) {
-                            c2 = Sets.calc_dist(k / density, v + var, Sets.setOfInterest);
+                            c2 = Sets.calc_dir(k / density, v + var, Sets.setOfInterest);
                             Renderer.draw_line(c, c2, Color.green);
                         }else{
                             Renderer.draw_dot(c, Color.green);
