@@ -60,11 +60,11 @@ class Renderer extends Thread {
         int h = images[0].getHeight();
         BufferedImage ret = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = (Graphics2D) ret.getGraphics();
-        for (int i = 0; i < images.length; i++) {
-            if(images[i].getWidth() != w || images[i].getHeight() != h){
+        for (BufferedImage bi : images) {
+            if(bi.getWidth() != w || bi.getHeight() != h){
                 throw new IllegalArgumentException("Images do not match in size.");
             }
-            g.drawImage(images[i], 0, 0, null);
+            g.drawImage(bi, 0, 0, null);
         }
         return ret;
     }

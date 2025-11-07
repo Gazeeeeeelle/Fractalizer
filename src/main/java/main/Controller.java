@@ -30,9 +30,7 @@ abstract class Controller {
                     Sets.connectLines ^= true;
                     Renderer.clearImage();
                 })
-                .map("C", () -> {
-                    Renderer.centerAtPixel(Window.getMousePos());
-                })
+                .map("C", () -> Renderer.centerAtPixel(Window.getMousePos()))
                 .map("N", () -> {
                     Renderer.night ^= true;
                     Renderer.clearImage();

@@ -1,7 +1,6 @@
 package main;
 
 abstract class Colors {
-    static int last;
     static int whichColorPalette = 0;
     static int[] //Color palettes:
             colors1 = {
@@ -28,12 +27,7 @@ abstract class Colors {
             grayTone
     };
     static int getColor(int n){
-        int c = colorPalettes[whichColorPalette][n % colorPalettes[whichColorPalette].length];
-        last = c;
-        return c;
-    }
-    static int getColor(){
-        return last;
+        return colorPalettes[whichColorPalette][n % colorPalettes[whichColorPalette].length];
     }
     private static int[] makeTone(double r, double g, double b, int minimumR, int minimumG, int minimumB, int size, boolean back, boolean invert){
         minimumR = (int) ((double) minimumR * r);
@@ -140,11 +134,11 @@ abstract class Colors {
     static int getColorDir (double... z){
         if(z==null) return 0;
         assert z.length == 2;
-        for (int i = 0; i < z.length; i++) {
-            if(Double.isNaN(z[i])){
+        for (double part : z) {
+            if(Double.isNaN(part)){
                 return 0xff000000;
             }
-            if(Double.isInfinite(z[i])){
+            if(Double.isInfinite(part)){
                 return 0xffffffff;
             }
         }

@@ -2,9 +2,7 @@ package main;
 
 import java.nio.channels.IllegalChannelGroupException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Scanner;
-import java.util.concurrent.atomic.AtomicReference;
 
 class InputReceiver extends Thread{
     private final Scanner SCANNER = new Scanner(System.in);
@@ -262,7 +260,7 @@ class InputReceiver extends Thread{
         String[] split = z.replaceAll("[ i]", "").split("[,+]");
         if(split.length != 2)
             throw new IllegalArgumentException("Parsed into more or less than two parts. Could not form complex number");
-        if(!isAbleToParseIntoDouble(split[0]+split[1]))
+        if(!isAbleToParseIntoDouble(split))
             throw new IllegalArgumentException("Invalid characters present. Could not form complex number.");
         return new double[]{Double.parseDouble(split[0]), Double.parseDouble(split[1])};
     }
@@ -275,17 +273,29 @@ class InputReceiver extends Thread{
             throw new IllegalArgumentException("Invalid input");
     }
     private boolean isAbleToParseIntoInteger(String... strings){
-        var concat = new AtomicReference<>("");
-        Arrays.asList(strings).forEach(e -> {
-            System.out.println(e);
-            concat.set(concat.get().concat(e));
-        });
-        return !concat.get().matches("^[ 0-9]");
+        var concat = "";
+        if(hasEmpty(strings)) return false;
+        concat = concatAll(strings);
+        return !concat.matches("^[ 0-9]");
     }
     private boolean isAbleToParseIntoDouble(String... strings){
-        var concat = new AtomicReference<>("");
-        Arrays.asList(strings).forEach(e -> concat.set(concat.get().concat(e)));
-        return !concat.get().matches("^[e. 0-9]");
+        var concat = "";
+        if(hasEmpty(strings)) return false;
+        concat = concatAll(strings);
+        return !concat.matches("^[e. 0-9]");
+    }
+    private boolean hasEmpty(String... strings){
+        for(String string : strings){
+            if(string.isEmpty()) return true;
+        }
+        return false;
+    }
+    private String concatAll(String... strings){
+        var concat = "";
+        for (String e : strings) {
+            concat += e;
+        }
+        return concat;
     }
     private static class Command{
         String name;

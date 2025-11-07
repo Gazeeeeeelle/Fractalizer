@@ -50,12 +50,12 @@ class ComplexMath {
                     (
                             Math.sin(blnk)*Math.cos(clnk)*Math.cos(dlnk)
                                     -Math.cos(blnk)*Math.sin(clnk)*Math.sin(dlnk)
-                    );;
+                    );
         }
         return ret;
     }
     static double[] inverse(double[] z){
-        double phi2 = -arg1(z[0], z[1]);;
+        double phi2 = -arg1(z[0], z[1]);
         double s = Math.sin(phi2);
         z[0] = Math.sqrt(1-s*s)*signC(phi2)/abs(z);
         z[1] = s/abs(z);
