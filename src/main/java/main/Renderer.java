@@ -22,7 +22,7 @@ class Renderer extends Thread {
     private static final Graphics2D
             img_g = (Graphics2D) img.getGraphics(),
             ovr_g = (Graphics2D) ovr.getGraphics(),
-            g = (Graphics2D) Window.Fractalizer.getGraphics();
+            g = (Graphics2D) Window.fractalizer.getGraphics();
     static double //Rendering bounds:
             fromX = ((double) w/ h * -2),
             toX = ((double) w/ h * 2),
@@ -136,10 +136,6 @@ class Renderer extends Thread {
                         x, y,
                         Colors.getColor(precision)
                 );
-//                img.setRGB(
-//                        x, y,
-//                        Colors.getColorDir(Sets.cache[0][x][y])
-//                );
             }
         }
     }

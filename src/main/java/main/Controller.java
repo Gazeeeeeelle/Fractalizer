@@ -9,11 +9,11 @@ abstract class Controller {
         map = new Map()
                 .map("G", () -> {
                     if (isCool(200)) {
-                        Sets.setZ(0, 0);
+                        Sets.setZ1(0, 0);
                         Renderer.clearImage();
                     }
                 })
-                .map("F", () -> Sets.setZ(Window.getMousePos()))
+                .map("F", () -> Sets.setZPixel(Window.getMousePos()))
                 .map("E", () -> {
                     Renderer.special ^= true;
                     Renderer.clearImage();
@@ -43,14 +43,6 @@ abstract class Controller {
                     Renderer.clearImage();
                 })
                 .map("S", () -> Renderer.showPosition ^= true)
-                .map("V", () -> {
-                    if (VideoRecorder.isRec) {
-                        VideoRecorder.isRec = false;
-                    }else {
-                        VideoRecorder vr = new VideoRecorder();
-                        vr.start();
-                    }
-                })
                 .map("A", () -> Renderer.axis ^= true)
                 .map("Right",  () -> {
                     Sets.mode++;

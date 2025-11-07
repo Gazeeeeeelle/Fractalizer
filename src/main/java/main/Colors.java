@@ -102,7 +102,15 @@ abstract class Colors {
         }
         whichColorPalette = localPointer;
     }
+    static int max(double... values){
+        int index = 0;
+        for (int i = 0; i < values.length-1; i++) {
+            if(values[index]<values[i]) index = i;
+        }
+        return index;
+    }
     static int getColorBW (double a){
+        if(Double.isInfinite(a) || Double.isNaN(a)) return 0x0;
         int base = getColorDir(a, 0);
         int r = (base>>16) & 0x000000ff;
         int g = (base>>8) & 0x000000ff;

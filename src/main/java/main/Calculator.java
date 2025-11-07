@@ -45,17 +45,8 @@ class Calculator extends Thread{
             for (int x = index; x < Window.jpWidth; x += order) {
                 if (!isOn) return;
                 //if the pixel isn't colored
-                if(!special) {
                 if (img.getRGB(x, y) == 0xff000000) {
                     Renderer.draw_frac(x, y, precision, n);
-                }
-                }else {
-                    Sets.calc_frac(x, y, 0, n);
-                    img.setRGB(
-                            x, y,
-                            Colors.getColorBW(1 / ComplexMath.abs(Sets.cache[0][x][y]))
-                    );
-
                 }
             }
         }

@@ -10,7 +10,7 @@ class Window extends JFrame implements MouseMotionListener, MouseListener, KeyLi
             height = 814,
             jpWidth = 814, //814 //FIXME
             jpHeight = 814; //814 //FIXME
-    static JPanel Fractalizer = new JPanel();
+    static JPanel fractalizer = new JPanel();
     static JPanel panel = new JPanel();
     static Point mousePt = new Point(0, 0);
     static int configSize = 200;
@@ -24,14 +24,14 @@ class Window extends JFrame implements MouseMotionListener, MouseListener, KeyLi
         this.setFocusable(true);
         this.addKeyListener(this);
 
-        Fractalizer.addMouseMotionListener(this);
-        Fractalizer.setLocation(configSize, 0);
-        Fractalizer.addMouseListener(this);
-        Fractalizer.addMouseWheelListener(this);
-        Fractalizer.setSize(new Dimension(width, height));
-        Fractalizer.setLayout(null);
-        Fractalizer.setBackground(Color.black);
-        Fractalizer.setFocusable(true);
+        fractalizer.addMouseMotionListener(this);
+        fractalizer.setLocation(configSize, 0);
+        fractalizer.addMouseListener(this);
+        fractalizer.addMouseWheelListener(this);
+        fractalizer.setSize(new Dimension(width, height));
+        fractalizer.setLayout(null);
+        fractalizer.setBackground(Color.black);
+        fractalizer.setFocusable(true);
 
         panel.setSize(new Dimension(configSize, height));
         panel.setBackground(new Color(30, 30, 30));
@@ -41,7 +41,7 @@ class Window extends JFrame implements MouseMotionListener, MouseListener, KeyLi
         initCfgPanel(panel);
 
         this.add(panel);
-        this.add(Fractalizer);
+        this.add(fractalizer);
         this.pack();
         this.setVisible(true);
     }
@@ -129,7 +129,7 @@ class Window extends JFrame implements MouseMotionListener, MouseListener, KeyLi
         }
     }
     public static int[] getMousePos(){
-        Point p = Fractalizer.getMousePosition();
+        Point p = fractalizer.getMousePosition();
         return new int[]{
                 (int) (p.getX()),
                 (int) (p.getY())
@@ -159,7 +159,7 @@ class Window extends JFrame implements MouseMotionListener, MouseListener, KeyLi
     }
     @Override
     public void mouseEntered(MouseEvent e) {
-        if(e.getSource().equals(Fractalizer)){
+        if(e.getSource().equals(fractalizer)){
             this.requestFocus();
         }
     }

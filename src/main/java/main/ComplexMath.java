@@ -16,6 +16,11 @@ class ComplexMath {
         Sets.cache[index][x][y][0] += ka*Math.sqrt(1-s*s)*signC(blnk);
         Sets.cache[index][x][y][1] -= ka*s;
     }
+    static double[] add(double[] z, double cr, double ci){
+        z[0]+=cr;
+        z[1]+=ci;
+        return z;
+    }
     static double[] invZetaFunction(int x, int y, int index, int nth){
         zetaFunction(x, y, index, nth);
         return complexPow(Sets.cache[index][x][y][0], Sets.cache[index][x][y][1], -1, 0);
@@ -121,6 +126,9 @@ class ComplexMath {
     static double abs(double[] c){
         return Math.sqrt(c[0]*c[0]+c[1]*c[1]);
     }
+    static double absSqr(double[] c){
+        return c[0]*c[0]+c[1]*c[1];
+    }
     static double absComplexPow(double rho, double ina, double R, double I){
         double absDelta = abs(rho, ina);
         double argDelta = arg1(rho, ina);
@@ -140,16 +148,23 @@ class ComplexMath {
         };
     }
     static double[] complexPow(double rho, double ina, double R, double I){
-        double absDelta = abs(rho, ina);
-        double argDelta = arg1(rho, ina);
-        double pref1 = Math.pow(absDelta, R)*Math.exp(-I*argDelta);
-        double phi1 = I*Math.log(absDelta);
-        double phi2 = R*argDelta;
-        double s = Math.sin(phi1 + phi2);
+        if(rho == 0 && ina == 0) return new double[]{0, 0};
+        double absolute = abs(rho, ina);
+        double argument = arg1(rho, ina);
+        double pref = Math.pow(absolute, R)*Math.exp(-I*argument);
+        double phi12 = I*Math.log(absolute)+R*argument;
+        double s = Math.sin(phi12);
         return new double[]{
-                pref1*Math.sqrt(1-s*s)*signC(phi1 + phi2),
-                pref1*s
+                pref*Math.sqrt(1-s*s)*signC(phi12),
+                pref*s
         };
     }
+
+    public static void main(String[] args) {
+        double[] c = complexPow(0, 2, 2, 0);
+        System.out.println(c[0] + ", " + c[1]);
+    }
+
     //Computation of GammaFunction;
 }
+

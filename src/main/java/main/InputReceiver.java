@@ -1,13 +1,16 @@
 package main;
 
+import java.nio.channels.IllegalChannelGroupException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicReference;
 
 class InputReceiver extends Thread{
     private final Scanner SCANNER = new Scanner(System.in);
     private final ArrayList<Command> commands = new ArrayList<>();
     private final String HELP_TEXT = buildHelpText();
-    private final String GENERIC_ERROR = "Invalid input.";
+    private final String GENERIC_ERROR = "An error has occurred.";
     private final String BINDINGS_TEXT =
             """
             g          - Reset initial Z;
@@ -27,7 +30,6 @@ class InputReceiver extends Thread{
             """;
     @Override
     public void run(){
-
         loadCommands();
 
         System.out.println("Send \"help\" to receive the command list.");
@@ -105,16 +107,18 @@ class InputReceiver extends Thread{
                 () -> {
                     String s = ask("Enter coordinates: ");
                     try {
-                        String[] arr = s.split(", | -> |i -> |i");
+                        String[] split = s.replaceAll("[ i]", "").split(",|->");
+                        checkParseAbilityDouble(split);
                         Renderer.setBounds(
-                                Double.parseDouble(arr[0]),
-                                Double.parseDouble(arr[1]),
-                                Double.parseDouble(arr[2]),
-                                Double.parseDouble(arr[3])
+                                Double.parseDouble(split[0]),
+                                Double.parseDouble(split[1]),
+                                Double.parseDouble(split[2]),
+                                Double.parseDouble(split[3])
                         );
                         Renderer.clearImage();
                         System.out.println("There you go!");
-                    } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+                    } catch (IllegalChannelGroupException e) {
+                        System.out.println(e.getMessage());
                         return 1;
                     }
                     return 0;
@@ -124,11 +128,13 @@ class InputReceiver extends Thread{
                 "n|night|setPinpointPrecision|pinpoint",
                 "<pinpoint precision value(Range: 0 -> +"+Integer.MAX_VALUE+")>",
                 () -> {
-                    String s = ask("Pinpoint precision: ");
+                    String answer = ask("Pinpoint precision: ");
                     try {
-                        Sets.solN = Integer.parseInt(s);
+                        checkParseAbilityInteger(answer);
+                        Sets.solN = Integer.parseInt(answer);
                         Renderer.clearImage();
-                    } catch (NumberFormatException e) {
+                    } catch (IllegalArgumentException e) {
+                        System.out.println(e.getMessage());
                         return 1;
                     }
                     return 0;
@@ -160,15 +166,17 @@ class InputReceiver extends Thread{
                 "threads|th|calcs|calculators",
                 "<amount of calculators(threads)> <priority of calculators(threads)>",
                 () -> {
-                    String answer;
                     try {
-                        answer = ask("Amount of calculators(threads): ");
-                        int n = Integer.parseInt(answer);
-                        answer = ask("Priority of calculators(threads): ");
-                        int p = Integer.parseInt(answer);
+                        String answer = ask("N° of threads, priority: ").replaceAll(" ", "");
+                        String[] split = answer.split(",");
+                        checkParseAbilityInteger(split);
                         Calculator.destroyCalculatorSet();
-                        Calculator.buildCalculatorSet(n, p);
-                    } catch (NumberFormatException e) {
+                        Calculator.buildCalculatorSet(
+                                Integer.parseInt(split[0]),
+                                Integer.parseInt(split[1])
+                        );
+                    } catch (IllegalArgumentException e) {
+                        System.out.println(e.getMessage());
                         return 1;
                     }
                     return 0;
@@ -180,34 +188,27 @@ class InputReceiver extends Thread{
                 () -> {
                     String answer = ask("Enter Z: ");
                     try {
-                        answer = answer.replaceAll(" ", "")
-                                .replaceAll("i", "")
-                                .replaceAll("\\+", ",");
-
-                        String[] split = answer.split(",");
-                        Sets.setZ(
-                                Double.parseDouble(split[0]),
-                                Double.parseDouble(split[1])
-                        );
+                        double[] z = parseComplexNumber(answer);
+                        Sets.setZ1(z[0], z[1]);
                         Renderer.clearImage();
-                    } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+                    } catch (IllegalArgumentException e) {
+                        System.out.println(e.getMessage());
                         return 1;
                     }
                     return 0;
-
                 }
         ));
         commands.add(new Command(
                 "zr",
                 "<Value for Zr>",
                 () -> {
-                    String answer = ask("Enter Zr: ");
+                    String answer = ask("Enter Re(Z): ");
                     try {
-                        double v1;
-                        v1 = Double.parseDouble(answer);
-                        Sets.setZR(v1);
+                        checkParseAbilityDouble(answer);
+                        Sets.setZ1(Double.parseDouble(answer), Sets.z1y);
                         Renderer.clearImage();
-                    } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+                    } catch (IllegalArgumentException e) {
+                        System.out.println(e.getMessage());
                         return 1;
                     }
                     return 0;
@@ -217,9 +218,9 @@ class InputReceiver extends Thread{
                 "zi",
                 "<Value for Zi>",
                 () -> {
-                    String answer = ask("Enter Zi: ");
+                    String answer = ask("Enter Im(Z): ");
                     try {
-                        Sets.setZI(Double.parseDouble(answer));
+                        Sets.setZ1(Sets.z1x, Double.parseDouble(answer));
                         Renderer.clearImage();
                     } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
                         return 1;
@@ -243,26 +244,48 @@ class InputReceiver extends Thread{
                     double dy = Renderer.toY-Renderer.fromY;
                     String answer = ask("Enter C: ");
                     try {
-                        answer = answer.replaceAll(" ", "")
-                                .replaceAll("i", "")
-                                .replaceAll("\\+", ",");
-
-                        String[] split = answer.split(",");
-                        double c1 = Double.parseDouble(split[0]);
-                        double c2 = Double.parseDouble(split[1]);
+                        double[] c = parseComplexNumber(answer);
                         Renderer.setBounds(
-                                c1-dx/2,
-                                c1+dx/2,
-                                c2-dy/2,
-                                c2+dy/2
-                                );
+                                c[0]-dx/2, c[0]+dx/2,
+                                c[1]-dy/2, c[1]+dy/2
+                        );
                         Renderer.clearImage();
-                    } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+                    } catch (IllegalArgumentException e) {
+                        System.out.println(e.getMessage());
                         return 1;
                     }
                     return 0;
                 }
         ));
+    }
+    private double[] parseComplexNumber(String z){
+        String[] split = z.replaceAll("[ i]", "").split("[,+]");
+        if(split.length != 2)
+            throw new IllegalArgumentException("Parsed into more or less than two parts. Could not form complex number");
+        if(!isAbleToParseIntoDouble(split[0]+split[1]))
+            throw new IllegalArgumentException("Invalid characters present. Could not form complex number.");
+        return new double[]{Double.parseDouble(split[0]), Double.parseDouble(split[1])};
+    }
+    private void checkParseAbilityDouble(String... strings) throws IllegalArgumentException{
+        if(!isAbleToParseIntoDouble(strings))
+            throw new IllegalArgumentException("Invalid input");
+    }
+    private void checkParseAbilityInteger(String... strings) throws IllegalArgumentException{
+        if(!isAbleToParseIntoInteger(strings))
+            throw new IllegalArgumentException("Invalid input");
+    }
+    private boolean isAbleToParseIntoInteger(String... strings){
+        var concat = new AtomicReference<>("");
+        Arrays.asList(strings).forEach(e -> {
+            System.out.println(e);
+            concat.set(concat.get().concat(e));
+        });
+        return !concat.get().matches("^[ 0-9]");
+    }
+    private boolean isAbleToParseIntoDouble(String... strings){
+        var concat = new AtomicReference<>("");
+        Arrays.asList(strings).forEach(e -> concat.set(concat.get().concat(e)));
+        return !concat.get().matches("^[e. 0-9]");
     }
     private static class Command{
         String name;
