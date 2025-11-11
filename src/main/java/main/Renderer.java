@@ -139,12 +139,12 @@ class Renderer extends Thread {
             }
         }
     }
-    static void draw_abs(int x, int y, int index, int nth, boolean paint){
-        if(Sets.calc_abs(x, y, index, nth, paint)) {
+    static void draw_abs(int x, int y, int index, int nth){
+        if(Sets.calc_abs(x, y, index, nth)) {
             if(Sets.julia){
                 img.setRGB(
                         x, y,
-                        Colors.getColorDir(ComplexMath.complexPow(Sets.cache[index][x][y][0], Sets.cache[index][x][y][1], -1, 0) )
+                        Colors.getColorDir(ComplexMath.inverse(Sets.cache[index][x][y]))
                 );
             }else {
                 img.setRGB(
@@ -235,7 +235,7 @@ class Renderer extends Thread {
                 p2cy(h - h / 4 - 1),
                 p2cy(h / 4)
         );
-        if(Sets.mode != Sets.DIST) {
+        if(Sets.mode != Sets.DIR) {
             clearImage(zoomInImage());
         }else{
             clearImage();
@@ -250,7 +250,7 @@ class Renderer extends Thread {
                 p2cy(h + h/2 + 1),
                 p2cy(-h/2 + 1)
         );
-        if(Sets.mode != Sets.DIST) {
+        if(Sets.mode != Sets.DIR) {
             clearImage(zoomOutImage());
         }else{
             clearImage();

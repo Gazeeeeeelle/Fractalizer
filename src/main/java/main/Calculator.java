@@ -23,13 +23,13 @@ class Calculator extends Thread{
     public void run(){
         while(purpose){
             if(isOn) {
-                if(Sets.mode == Sets.DIST){
-                    dir();
-                } else if(Sets.mode==Sets.FRACTAL){
-                    fractal();
-                    n = (Renderer.night ? Sets.solN : 1);
-                }else if (Sets.mode==Sets.ABS){
-                    abs();
+                switch (Sets.mode){
+                    case Sets.DIR -> dir();
+                    case Sets.FRACTAL -> {
+                        fractal();
+                        n = (Renderer.night ? Sets.solN : 1);
+                    }
+                    case Sets.ABS -> abs();
                 }
                 precision++;
             }
@@ -44,7 +44,6 @@ class Calculator extends Thread{
         for (int y = 0; y < Window.jpHeight; y++) {
             for (int x = index; x < Window.jpWidth; x += order) {
                 if (!isOn) return;
-                //if the pixel isn't colored
                 if (img.getRGB(x, y) == 0xff000000) {
                     Renderer.draw_frac(x, y, precision, n);
                 }
@@ -55,7 +54,7 @@ class Calculator extends Thread{
         for (int y = 0; y < Window.jpHeight; y++) {
             for (int x = index; x < Window.jpWidth; x += order) {
                 if(!isOn) return;
-                Renderer.draw_abs(x, y, 0, precision+1, (img.getRGB(x, y) != 0xff000000));
+                Renderer.draw_abs(x, y, 0, precision+1);
             }
         }
     }

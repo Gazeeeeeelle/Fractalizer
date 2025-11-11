@@ -128,7 +128,6 @@ class InputReceiver extends Thread{
                 () -> {
                     String answer = ask("Pinpoint precision: ");
                     try {
-                        checkParseAbilityInteger(answer);
                         Sets.solN = Integer.parseInt(answer);
                         Renderer.clearImage();
                     } catch (IllegalArgumentException e) {
@@ -269,8 +268,9 @@ class InputReceiver extends Thread{
             throw new IllegalArgumentException("Invalid input");
     }
     private void checkParseAbilityInteger(String... strings) throws IllegalArgumentException{
-        if(!isAbleToParseIntoInteger(strings))
+        if(!isAbleToParseIntoInteger(strings)) {
             throw new IllegalArgumentException("Invalid input");
+        }
     }
     private boolean isAbleToParseIntoInteger(String... strings){
         var concat = "";

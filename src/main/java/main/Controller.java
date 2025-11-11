@@ -13,13 +13,21 @@ abstract class Controller {
                         Renderer.clearImage();
                     }
                 })
-                .map("F", () -> Sets.setZPixel(Window.getMousePos()))
+                .map("F", () -> {
+                    if(Window.getMousePos() != null) {
+                        Sets.setZPixel(Window.getMousePos());
+                    }
+                })
                 .map("E", () -> {
                     Renderer.special ^= true;
                     Renderer.clearImage();
                 })
                 .map("O", () -> {
                     Renderer.resetRange();
+                    Renderer.clearImage();
+                })
+                .map("H", () -> {
+                    Sets.inverse ^= true;
                     Renderer.clearImage();
                 })
                 .map("J", () -> {

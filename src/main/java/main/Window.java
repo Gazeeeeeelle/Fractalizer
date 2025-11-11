@@ -13,10 +13,9 @@ class Window extends JFrame implements MouseMotionListener, MouseListener, KeyLi
     static JPanel fractalizer = new JPanel();
     static JPanel panel = new JPanel();
     static Point mousePt = new Point(0, 0);
-    static int configSize = 200;
 
     Window() {
-        this.setPreferredSize(new Dimension(width + configSize, height));
+        this.setPreferredSize(new Dimension(width, height));
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setTitle("Fractalizer");
         this.setUndecorated(true);
@@ -25,7 +24,6 @@ class Window extends JFrame implements MouseMotionListener, MouseListener, KeyLi
         this.addKeyListener(this);
 
         fractalizer.addMouseMotionListener(this);
-        fractalizer.setLocation(configSize, 0);
         fractalizer.addMouseListener(this);
         fractalizer.addMouseWheelListener(this);
         fractalizer.setSize(new Dimension(width, height));
@@ -33,69 +31,10 @@ class Window extends JFrame implements MouseMotionListener, MouseListener, KeyLi
         fractalizer.setBackground(Color.black);
         fractalizer.setFocusable(true);
 
-        panel.setSize(new Dimension(configSize, height));
-        panel.setBackground(new Color(30, 30, 30));
-        panel.setLayout(null);
-        panel.setFocusable(false);
-
-        initCfgPanel(panel);
-
         this.add(panel);
         this.add(fractalizer);
         this.pack();
         this.setVisible(true);
-    }
-    static void initCfgPanel(JPanel panel) {
-        //Threads
-        {
-            JTextField tf_threads = createTextField(10, 10, 130, 50, "", null);
-            JTextField tf_priority = createTextField(10, 70, 130, 50, "", null);
-
-            Button b_sendThreadInfo = createButton(150, 10, 40, 110, ">", e -> {
-                int n = 1, p = 1;
-                boolean safe = true;
-                try {
-                    n = Integer.parseInt(tf_threads.getText());
-                } catch (NumberFormatException exception) {
-                    tf_threads.setText("ERROR");
-                    safe = false;
-                }
-                try {
-                    p = Integer.parseInt(tf_priority.getText());
-                } catch (NumberFormatException exception) {
-                    tf_priority.setText("ERROR");
-                    safe = false;
-                }
-                if (safe) {
-                    Calculator.destroyCalculatorSet();
-                    Calculator.buildCalculatorSet(n, p);
-                }
-            });
-            panel.add(tf_threads);
-            panel.add(tf_priority);
-            panel.add(b_sendThreadInfo);
-        }
-    }
-    static JTextField createTextField(int x, int y, int w, int h, String s, ActionListener al) {
-        JTextField tf = new JTextField();
-        tf.setBounds(x, y, w, h);
-        tf.setText(s);
-        applyDesign(tf);
-        tf.addActionListener(al);
-        return tf;
-    }
-    static Button createButton(int x, int y, int w, int h, String s, ActionListener al) {
-        Button b = new Button();
-        b.setBounds(x, y, w, h);
-        b.addActionListener(al);
-        b.setLabel(s);
-        applyDesign(b);
-        return b;
-    }
-    static void applyDesign(Component b) {
-        b.setBackground(new Color(60, 60, 60));
-        b.setFont(new Font("Arial", Font.PLAIN, 30));
-        b.setForeground(Color.white);
     }
     @Override
     public void mouseDragged(MouseEvent e) {
@@ -130,6 +69,7 @@ class Window extends JFrame implements MouseMotionListener, MouseListener, KeyLi
     }
     public static int[] getMousePos(){
         Point p = fractalizer.getMousePosition();
+        if(p==null)return null;
         return new int[]{
                 (int) (p.getX()),
                 (int) (p.getY())

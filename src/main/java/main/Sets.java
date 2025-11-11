@@ -2,14 +2,15 @@ package main;
 
 abstract class Sets {
     static int setOfInterest = 1;
-    static double topographicStep = .1;
     static final int FRACTAL = 1,
                      ABS = 2,
-                     DIST = 3;
+                     DIR = 3;
     static int mode = FRACTAL;
     static boolean
                 julia = false,
+                inverse = false,
                 connectLines = false;
+    static double topographicStep = .1;
     static double z1x = 0.0, z1y = 0.0;
     static int solN = 100;
     static double[][][][] cache = new double[2][Window.jpWidth][Window.jpHeight][2];
@@ -37,23 +38,13 @@ abstract class Sets {
             default -> new double[]{0, 0};
         };
     }
-    static boolean calc_abs(int x, int y, int index, int nth, boolean paint){
-        if(paint){
-            switch (setOfInterest) {
-                case 5 -> ComplexMath.zetaFunction(x, y, index, nth);
-                default -> {return false;}
-            }
-            return true;
-        }else{
-            switch (setOfInterest) {
-                case 1 -> ComplexMath.fibonacci_C(x, y, index);
-                case 2 -> ComplexMath.complexPow(x, y, x, y);
-                case 3 -> ComplexMath.cos(x, y);
-                case 4 -> ComplexMath.sin(x, y);
-                case 5 -> ComplexMath.zetaFunction(x, y, index, nth);
-            }
-            return true;
+    static boolean calc_abs(int x, int y, int index, int nth){
+        switch (setOfInterest) {
+            case 1 -> ComplexMath.fibonacci_C(x, y, index);
+            case 2 -> ComplexMath.zetaFunction(x, y, index, nth);
+            case 3 -> ComplexMath.invZetaFunction(x, y, index, nth);
         }
+        return true;
     }
     public static void cleanCache(int index){
         for (int x = 0; x < Window.jpWidth; x++) {
@@ -84,18 +75,29 @@ abstract class Sets {
             c1 = Renderer.p2cx(x);
             c2 = Renderer.p2cy(y);
         }
+        for (int i = 0; i < times; i++) {
+            if(mandelbrot(x, y, c1, c2, index)) return true;
+            if(inverse) ComplexMath.s_inverse(x, y, index);
+        }
+        return false;
+    }
+    private static boolean mandelbrot(int x, int y, double c1, double c2, int index){
         double z1 = cache[index][x][y][0];
         double z2 = cache[index][x][y][1];
-        for (int i = 0; i < times; i++) {
-            cache[index][x][y][0] = z1 * z1 - (z2 * z2) + c1;
-            cache[index][x][y][1] = (2 * z1 * z2) + c2;
-            if (cache[index][x][y][0] * cache[index][x][y][0]
-                    + cache[index][x][y][1] * cache[index][x][y][1] > 4) {
-                return true;
-            }
-            z1 = cache[index][x][y][0];
-            z2 = cache[index][x][y][1];
+        cache[index][x][y][0] = z1 * z1 - (z2 * z2) + c1;
+        cache[index][x][y][1] = (2 * z1 * z2) + c2;
+        return (cache[index][x][y][0] * cache[index][x][y][0]
+                + cache[index][x][y][1] * cache[index][x][y][1] > 4);
+    }
+    private static boolean cached_inverse(int x, int y, int index) {
+        double c1 = z1x;
+        double c2 = z1y;
+        if (!julia) {
+            c1 = Renderer.p2cx(x);
+            c2 = Renderer.p2cy(y);
         }
+        mandelbrot(x,y, c1, c2, index);
+        ComplexMath.s_inverse(x, y, index);
         return false;
     }
     private static boolean cached_power_brot(int x, int y, int index, int times) {
@@ -145,18 +147,20 @@ abstract class Sets {
             c1 = Renderer.p2cx(x);
             c2 = Renderer.p2cy(y) * -1;// "*-1" for flipping vertically
         }
-        double z1 = cache[index][x][y][0];
-        double z2 = cache[index][x][y][1];
         for (int i = 0; i < times; i++) {
-            z1 = Math.abs(z1);
-            z2 = Math.abs(z2);
-            z1 = (z1 * z1 - z2 * z2) + c1;
-            z2 = (2 * Math.abs(cache[index][x][y][0] * z2)) + c2;
-            cache[index][x][y][0] = z1;
-            cache[index][x][y][1] = z2;
-            if (z1 * z1 + z2 * z2 > 4) return true;
+            if(burningShip(x, y, c1, c2, index)) return true;
+            if(inverse) ComplexMath.s_inverse(x, y, index);
         }
         return false;
+    }
+    private static boolean burningShip(int x, int y, double c1, double c2, int index){
+        double z1 = Math.abs(cache[index][x][y][0]);
+        double z2 = Math.abs(cache[index][x][y][1]);
+        z1 = (z1 * z1 - z2 * z2) + c1;
+        z2 = (2 * Math.abs(cache[index][x][y][0] * z2)) + c2;
+        cache[index][x][y][0] = z1;
+        cache[index][x][y][1] = z2;
+        return (z1 * z1 + z2 * z2 > 4);
     }
     private static boolean cached_celtic(int x, int y, int index, int times){
         double c1 = z1x;
@@ -165,16 +169,18 @@ abstract class Sets {
             c1 = Renderer.p2cx(x);
             c2 = Renderer.p2cy(y);
         }
-        double z1 = cache[index][x][y][0];
-        double z2 = cache[index][x][y][1];
         for (int i = 0; i < times; i++) {
-            z2 = Math.abs((z1*z1) - (z2*z2)) + c1;
-            z1 = z1 * cache[index][x][y][1] * 2 + c2;
-            if (z1 * z1 + z2 * z2 > 4) return true;
-            cache[index][x][y][0] = z1;
-            cache[index][x][y][1] = z2;
+            if(celtic(x, y, c1, c2, index)) return true;
+            if(inverse) ComplexMath.s_inverse(x, y, index);
         }
         return false;
+    }
+    private static boolean celtic(int x, int y, double c1, double c2, int index){
+        double z2 = Math.abs((cache[index][x][y][0]*cache[index][x][y][0]) - (cache[index][x][y][1]*cache[index][x][y][1])) + c1;
+        double z1 = cache[index][x][y][0] * cache[index][x][y][1] * 2 + c2;
+        cache[index][x][y][0] = z1;
+        cache[index][x][y][1] = z2;
+        return (z1 * z1 + z2 * z2 > 4);
     }
     private static boolean cached_invMandelbrot(int x, int y, int index, int times){
         double c1 = z1x;
@@ -183,17 +189,12 @@ abstract class Sets {
             c1 = Renderer.p2cx(x);
             c2 = Renderer.p2cy(y);
         }
-        double z1 = cache[index][x][y][0];
-        double z2 = cache[index][x][y][1];
         double abs2 = c1 * c1 + c2 * c2;
         c1 = c1 / abs2;
         c2 = -c2 / abs2;
         for (int i = 0; i < times; i++) {
-            z1 = z1 * z1 - (z2 * z2) + c1;
-            z2 = (2 * cache[index][x][y][0] * z2) + c2;
-            if (z1 * z1 + z2 * z2 > 4) return true;
-            cache[index][x][y][0] = z1;
-            cache[index][x][y][1] = z2;
+            if(mandelbrot(x, y, c1, c2, index)) return true;
+            if(inverse) ComplexMath.s_inverse(x, y, index);
         }
         return false;
     }

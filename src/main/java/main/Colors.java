@@ -142,7 +142,7 @@ abstract class Colors {
                 return 0xffffffff;
             }
         }
-        double arg = Math.toDegrees(ComplexMath.arg1(z[0], z[1]));
+        double arg = Math.toDegrees(ComplexMath.arg(z[0], z[1]));
         if(arg < 0) arg += 360;
         int r=0,
                 g=0,

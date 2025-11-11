@@ -5,25 +5,24 @@ import static main.Renderer.p2cy;
 
 class ComplexMath {
     static void zetaFunction(int x, int y, int index, int nth){
-        double a = p2cx(x);
-        double b = p2cy(y);
-
-//        if(a<=1) return;
-
-        double ka = Math.pow(nth, -a);
-        double blnk = b*Math.log(nth);
-        double s = Math.sin(blnk);
-        Sets.cache[index][x][y][0] += ka*Math.sqrt(1-s*s)*signC(blnk);
-        Sets.cache[index][x][y][1] -= ka*s;
+        double ka = Math.pow(nth, -p2cx(x));
+        double[] cs = cosSinPair(-p2cy(y)*Math.log(nth));
+        Sets.cache[index][x][y][0] += ka*cs[0];
+        Sets.cache[index][x][y][1] += ka*cs[1];
+        if(Sets.inverse) s_inverse(x, y, index);
     }
     static double[] add(double[] z, double cr, double ci){
         z[0]+=cr;
         z[1]+=ci;
         return z;
     }
-    static double[] invZetaFunction(int x, int y, int index, int nth){
-        zetaFunction(x, y, index, nth);
-        return complexPow(Sets.cache[index][x][y][0], Sets.cache[index][x][y][1], -1, 0);
+    static void invZetaFunction(int x, int y, int index, int nth){
+        double[] i = inverse(p2cx(x), p2cy(y));
+        double ka = Math.pow(nth, -i[0]);
+        double[] cs = cosSinPair(-i[1]*Math.log(nth));
+        Sets.cache[index][x][y][0] += ka*cs[0];
+        Sets.cache[index][x][y][1] += ka*cs[1];
+        if(Sets.inverse) s_inverse(x, y, index);
     }
     static double[] zetaFunctionQ(double a, double b, double c, double d, int depth){
         double[] ret = new double[]{0,0};
@@ -54,12 +53,25 @@ class ComplexMath {
         }
         return ret;
     }
-    static double[] inverse(double[] z){
-        double phi2 = -arg1(z[0], z[1]);
-        double s = Math.sin(phi2);
-        z[0] = Math.sqrt(1-s*s)*signC(phi2)/abs(z);
-        z[1] = s/abs(z);
-        return z;
+    static void s_inverse(int x, int y, int index){
+        double[] z = inverse(Sets.cache[index][x][y]);
+        Sets.cache[index][x][y][0] = z[0];
+        Sets.cache[index][x][y][1] = z[1];
+    }
+    static double[] inverse(double... z){
+        assert z.length==2;
+        double phi2 = -arg(z[0], z[1]);
+        double[] cs = cosSinPair(phi2);
+        double i_arg = 1/abs(z);
+        return new double[]{
+                i_arg*cs[0],
+                i_arg*cs[1]
+        };
+    }
+    private static double[] cosSinPair(double angle){
+        double s = Math.sin(angle);
+        double c = Math.sqrt(1-s*s)*signC(angle);
+        return new double[]{c,s};
     }
     private static int signC(double v){
         v %= (2*Math.PI);
@@ -86,7 +98,7 @@ class ComplexMath {
     }
     static double[] complexLog1(double a, double b){
         double lnAbs = Math.log(abs(a, b));
-        double arg = arg1(a, b);
+        double arg = arg(a, b);
         return new double[]{
                 lnAbs,
                 arg
@@ -114,9 +126,10 @@ class ComplexMath {
                 -Math.sin(a)*Math.sinh(b)
         };
     }
-    static double arg1(double a, double b){
+    static double arg(double a, double b){
         return Math.atan2(b, a);
     }
+    @Deprecated
     static double arg2(double a, double b){
         return Math.atan(b/a);
     }
@@ -131,17 +144,17 @@ class ComplexMath {
     }
     static double absComplexPow(double rho, double ina, double R, double I){
         double absDelta = abs(rho, ina);
-        double argDelta = arg1(rho, ina);
+        double argDelta = arg(rho, ina);
         return Math.pow(absDelta, R)*Math.exp(-I*argDelta);
     }
     static double psi_delta_R(double rho, double ina, double R, double I){
         double absDelta = abs(rho, ina);
-        double argDelta = arg1(rho, ina);
+        double argDelta = arg(rho, ina);
         return Math.pow(absDelta, R)*Math.exp(-I*argDelta);
     }
     static double[] psi(double rho, double ina, double R, double I){
-        double pref1 = Math.pow(abs(rho, ina), arg1(R, I));
-        double args = arg1(R, I)*arg1(rho, ina);
+        double pref1 = Math.pow(abs(rho, ina), arg(R, I));
+        double args = arg(R, I)* arg(rho, ina);
         return new double[]{
                 pref1*Math.cos(args),
                 pref1*Math.sin(args),
@@ -149,10 +162,10 @@ class ComplexMath {
     }
     static double[] complexPow(double rho, double ina, double R, double I){
         if(rho == 0 && ina == 0) return new double[]{0, 0};
-        double absolute = abs(rho, ina);
-        double argument = arg1(rho, ina);
-        double pref = Math.pow(absolute, R)*Math.exp(-I*argument);
-        double phi12 = I*Math.log(absolute)+R*argument;
+        double abs = abs(rho, ina);
+        double arg = arg(rho, ina);
+        double pref = Math.pow(abs, R)*Math.exp(-I*arg);
+        double phi12 = I*Math.log(abs)+R*arg;
         double s = Math.sin(phi12);
         return new double[]{
                 pref*Math.sqrt(1-s*s)*signC(phi12),
