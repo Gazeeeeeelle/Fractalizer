@@ -8,7 +8,7 @@ abstract class Colors {
             -16775324, -15979382, -15183183, -13009455,
             -7948827 , -2888456 , -923201  , -472737  ,
             -22016   , -3375104 , -6727936 , -9817085
-    },
+            },
             greenTone = makeTone(0, 1, 0, 50, 100, 0, 100, true, false),
             iceCoaledTone = makeTone(0, 1, 1, 0, 50, 255, 100, true, false),
             redToYellowTone = makeTone(1, 1, 0, 255, 50, 0, 100, true, false),

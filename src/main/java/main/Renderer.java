@@ -8,39 +8,38 @@ import java.io.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-import static main.Sets.cleanCache;
+import static main.Sets.clearCache;
 
 class Renderer extends Thread {
+    private static final Window window = new Window();
     static boolean special = false;
-    public static final int
-            w = Window.jpWidth,
-            h = Window.jpHeight;
+    public static final int w = window.jpWidth;
+    public static final int h = window.jpHeight;
     static BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
     static BufferedImage img_black = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
     static BufferedImage ovr = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
     static BufferedImage ovr_blank = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
     private static final Graphics2D
-            img_g = (Graphics2D) img.getGraphics(),
-            ovr_g = (Graphics2D) ovr.getGraphics(),
-            g = (Graphics2D) Window.fractalizer.getGraphics();
+            img_g = (Graphics2D) img.getGraphics(), //BufferedImage's graphics
+            ovr_g = (Graphics2D) ovr.getGraphics(), //Second BufferedImage's graphics
+            g = (Graphics2D) Window.fractalizer.getGraphics(); //Window's JPanel's graphics
     static double //Rendering bounds:
-            fromX = ((double) w/ h * -2),
-            toX = ((double) w/ h * 2),
+            fromX = ((double) w / h * -2),
+            toX = ((double) w / h * 2),
             fromY = -2,
             toY = 2;
     static final double[] initialCoordinates = new double[]{fromX, toX, fromY, toY};
-    static boolean //options:
+    static private boolean //options:
             showPosition = false,
-            axis = false,
-            night = false,
-            preCalcRange = true;
+            showAxis = false,
+            pinpointPrecision = false;
     @Override
     public void run(){
         initialize();
-        Calculator.buildCalculatorSet(1, 1);
+        Calculator.buildCalculatorSet(w, h, 1, 1);
         while(true){
 
-            if(axis) {
+            if(showAxis) {
                 drawAxis();
                 g.drawImage(imgUnion(img, ovr), 0, 0, null);
             }else{
@@ -117,20 +116,10 @@ class Renderer extends Thread {
     private static double mod(double a, double b){
         return difference(a,b*(int)(a/b));
     }
-    public static void chooseSet(int set){
-        turnOff();
-        Calculator.resetPrecision();
-        cleanCache(0);
-        cleanCache(1);
-        img_g.setColor(Color.black);
-        img_g.fillRect(0,0, w, h);
-        Sets.setOfInterest = set;
-        turnOn();
-    }
     static void draw_frac(int x, int y, int precision, int times){
         if (Sets.calc_frac(x, y, 0, times)) {
-            if (night) {
-                img.setRGB(x, y, -1);
+            if (pinpointPrecision) {
+                 img.setRGB(x, y, -1);
             } else {
                  img.setRGB(
                         x, y,
@@ -141,7 +130,7 @@ class Renderer extends Thread {
     }
     static void draw_abs(int x, int y, int index, int nth){
         if(Sets.calc_abs(x, y, index, nth)) {
-            if(Sets.julia){
+            if(Sets.isJulia()){
                 img.setRGB(
                         x, y,
                         Colors.getColorDir(ComplexMath.inverse(Sets.cache[index][x][y]))
@@ -181,13 +170,13 @@ class Renderer extends Thread {
         return Math.max(Math.min(value, max), min);
     }
     static boolean isDraw(int x, int y, int times){
-        cleanCache(x, y, 1);
+        clearCache(x, y, 1);
         return Sets.calc_frac(x, y, 1, times);
     }
     private static void initialize(){
         AffineTransform af = new AffineTransform();
-        af.setToScale((double) Window.width * 1.25 / (double) w,
-                (double) Window.height * 1.25 / (double) h
+        af.setToScale((double) window.width * 1 / (double) w, //FIXME
+                (double) window.height * 1 / (double) h
         );
         g.setTransform(af);
     }
@@ -197,10 +186,9 @@ class Renderer extends Thread {
         turnOn();
     }
     private static void clearImage(BufferedImage image){
-        Calculator.resetPrecision();
+        Calculator.resetPrecisions();
         img_g.drawImage(image, 0, 0, null);
-        cleanCache(0);
-        cleanCache(1);
+        clearCache(0, 1);
     }
     static void resetRange(){
         fromX = initialCoordinates[0];
@@ -231,8 +219,8 @@ class Renderer extends Thread {
         turnOff();
         setBounds(
                 p2cx(w / 4),
-                p2cx(w - w / 4 - 1),
-                p2cy(h - h / 4 - 1),
+                p2cx(w - w / 4),
+                p2cy(h - h / 4),
                 p2cy(h / 4)
         );
         if(Sets.mode != Sets.DIR) {
@@ -245,10 +233,10 @@ class Renderer extends Thread {
     static void zoomOut(){
         turnOff();
         setBounds(
-                p2cx(-w/2 + 1),
-                p2cx(w + w/2 + 1),
-                p2cy(h + h/2 + 1),
-                p2cy(-h/2 + 1)
+                p2cx(-w/2),
+                p2cx(w + w/2),
+                p2cy(h + h/2),
+                p2cy(-h/2)
         );
         if(Sets.mode != Sets.DIR) {
             clearImage(zoomOutImage());
@@ -311,6 +299,14 @@ class Renderer extends Thread {
         return (int)((coor-toY) * h
                         / (fromY - toY));
     }
+    public static void chooseSet(int set){
+        turnOff();
+        clearImage();
+        img_g.setColor(Color.black);
+        img_g.fillRect(0,0, w, h);
+        Sets.setOfInterest = set;
+        turnOn();
+    }
     static void move(int dx, int dy){
         turnOff();
         shiftBounds(
@@ -367,4 +363,20 @@ class Renderer extends Thread {
     static void turnOn(){
         Calculator.isOn = true;
     }
+    static void togglePosition(){
+        showPosition ^= true;
+    }
+    static void toggleAxis(){
+        showAxis ^= true;
+    }
+    static void togglePreCalculation(){
+        Calculator.preCalculation ^= true;
+    }
+    static void togglePinpointPrecision(){
+        pinpointPrecision ^= true;
+    }
+    static boolean isPinpointPrecision(){
+        return pinpointPrecision;
+    }
+
 }

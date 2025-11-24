@@ -1,34 +1,66 @@
 package main;
 
-abstract class Sets {
+final class Sets {
+    private Sets(){}
     static int setOfInterest = 1;
     static final int FRACTAL = 1,
                      ABS = 2,
                      DIR = 3;
     static int mode = FRACTAL;
-    static boolean
+    private static boolean
                 julia = false,
-                inverse = false,
-                connectLines = false;
+                inverse = false;
+    static boolean connectLines = false;
     static double topographicStep = .1;
     static double z1x = 0.0, z1y = 0.0;
     static int solN = 100;
-    static double[][][][] cache = new double[2][Window.jpWidth][Window.jpHeight][2];
+    private static final double[][][] reference = new double[Renderer.w][Renderer.h][2];
+    static double[][][][] cache =
+            new double[2][Renderer.w][Renderer.h][2]; //FIXME cache should be at the calculator
     static {
-        cleanCache(0);
-        cleanCache(1);
+        populateReverence(z1x, z1y); //reference
+        clearCache(0, 1);
     }
+    //Complex functions for rendering fractals
+    private static final Fractal //TODO evaluate if creating a class "Fractal" is a nice decision
+    mandelbrot = new Fractal((x, y, c1, c2, i) -> {
+        double z1 = cache[i][x][y][0];
+        cache[i][x][y][0] = z1 * z1 - (cache[i][x][y][1] * cache[i][x][y][1]) + c1;
+        cache[i][x][y][1] = (2 * z1 * cache[i][x][y][1]) + c2;
+        return (cache[i][x][y][0] * cache[i][x][y][0]
+                + cache[i][x][y][1] * cache[i][x][y][1] > 4);
+    }),
+    burningShip = new Fractal((x, y, c1, c2, i) -> {
+        c2 = -c2;
+        double z1 = Math.abs(cache[i][x][y][0]);
+        double z2 = Math.abs(cache[i][x][y][1]);
+        z1 = (z1 * z1 - z2 * z2) + c1;
+        z2 = (2 * Math.abs(cache[i][x][y][0] * z2)) + c2;
+        cache[i][x][y][0] = z1;
+        cache[i][x][y][1] = z2;
+        return (z1 * z1 + z2 * z2 > 4);
+    }),
+    celtic = new Fractal((x, y, c1, c2, i) -> {
+        double z1 = cache[i][x][y][0] * cache[i][x][y][1] * 2 + c2;
+        double z2 = Math.abs(cache[i][x][y][0]*cache[i][x][y][0] - cache[i][x][y][1]*cache[i][x][y][1]) + c1;
+        cache[i][x][y][0] = z1;
+        cache[i][x][y][1] = z2;
+        return (z1 * z1 + z2 * z2 > 4);
+    }),
+    powerBrot = new Fractal((x, y, c1, c2, i) -> {
+        double z1 = cache[i][x][y][0];
+        double z2 = cache[i][x][y][1];
+        cache[i][x][y] = ComplexMath.complexPow(z1, z2, 4, 0);
+        cache[i][x][y][0] += c1;
+        cache[i][x][y][1] += c2;
+        return (cache[i][x][y][0] * cache[i][x][y][0]
+                + cache[i][x][y][1] * cache[i][x][y][1] > 4);
+    });
+    private static final Fractal[] sets = new Fractal[]{null, mandelbrot, burningShip, celtic, powerBrot};
     static boolean calc_frac(int x, int y, int index, int n){
-        return switch (setOfInterest) {
-            case 1 -> cached_mandelbrot(x, y, index, n);
-            case 2 -> cached_burningShip(x, y, index, n);
-            case 3 -> cached_celtic(x, y, index, n);
-            case 4 -> cached_invMandelbrot(x, y, index, n);
-            case 5 -> cached_power_brot(x, y, index, n);
-            case 6 -> cached_gahbrot(x, y, index, n);
-            default -> false;
-        };
+        return cached_generalized(sets[setOfInterest], x, y, index, n);
     }
+    //TODO evaluate: Should there be a calculate function that receives Sets.mode to then decide which to call?
     static double[] calc_dir(double x, double y, int set){
         return switch (set) {
             case 1 -> ComplexMath.complexPow(x, y, z1x, z1y);
@@ -46,205 +78,105 @@ abstract class Sets {
         }
         return true;
     }
-    public static void cleanCache(int index){
-        for (int x = 0; x < Window.jpWidth; x++) {
-            for (int y = 0; y < Window.jpWidth; y++) {
-                if(julia && (Sets.mode == Sets.FRACTAL)) {
-                    cache[index][x][y][0] = Renderer.p2cx(x);
-                    cache[index][x][y][1] = Renderer.p2cy(y);
-                }else{
-                    cache[index][x][y][0] = z1x;
-                    cache[index][x][y][1] = z1y;
+    private static boolean cached_generalized(Fractal fr, int x, int y, int index, int times){
+        double c1 = z1x;
+        double c2 = z1y;
+        if (!julia) {
+            c1 = Renderer.p2cx(x);
+            c2 = Renderer.p2cy(y);
+        }
+        for (int i = 0; i < times; i++) {
+            if(fr.f(x, y, c1, c2, index)) return true;
+            if(inverse) ComplexMath.s_inverse(x, y, index);
+        }
+        return false;
+    }
+    public static void clearCache(int... indexes){
+        for(int index : indexes) {
+            int width = cache[index].length;
+            int height = cache[index][0].length;
+            for (int x = 0; x < width; x++) {
+                for (int y = 0; y < height; y++) {
+                    clearCache(x, y, index);
                 }
             }
         }
     }
-    public static void cleanCache(int x, int y, int index){
-        if(julia && (Sets.mode == Sets.FRACTAL)) {
-            cache[index][x][y][0] = Renderer.p2cx(x);
-            cache[index][x][y][1] = Renderer.p2cy(y);
-        }else{
-            cache[index][x][y][0] = z1x;
-            cache[index][x][y][1] = z1y;
-        }
+    public static void clearCache(int x, int y, int index){
+        cache[index][x][y][0] = reference[x][y][0];
+        cache[index][x][y][1] = reference[x][y][1];
     }
-    private static boolean cached_mandelbrot(int x, int y, int index, int times) {
-        double c1 = z1x;
-        double c2 = z1y;
-        if (!julia) {
-            c1 = Renderer.p2cx(x);
-            c2 = Renderer.p2cy(y);
-        }
-        for (int i = 0; i < times; i++) {
-            if(mandelbrot(x, y, c1, c2, index)) return true;
-            if(inverse) ComplexMath.s_inverse(x, y, index);
-        }
-        return false;
-    }
-    private static boolean mandelbrot(int x, int y, double c1, double c2, int index){
-        double z1 = cache[index][x][y][0];
-        double z2 = cache[index][x][y][1];
-        cache[index][x][y][0] = z1 * z1 - (z2 * z2) + c1;
-        cache[index][x][y][1] = (2 * z1 * z2) + c2;
-        return (cache[index][x][y][0] * cache[index][x][y][0]
-                + cache[index][x][y][1] * cache[index][x][y][1] > 4);
-    }
-    private static boolean cached_inverse(int x, int y, int index) {
-        double c1 = z1x;
-        double c2 = z1y;
-        if (!julia) {
-            c1 = Renderer.p2cx(x);
-            c2 = Renderer.p2cy(y);
-        }
-        mandelbrot(x,y, c1, c2, index);
-        ComplexMath.s_inverse(x, y, index);
-        return false;
-    }
-    private static boolean cached_power_brot(int x, int y, int index, int times) {
-        double c1 = z1x;
-        double c2 = z1y;
-        if (!julia) {
-            c1 = Renderer.p2cx(x);
-            c2 = Renderer.p2cy(y);
-        }
-        double z1, z2;
-        for (int i = 0; i < times; i++) {
-            z1 = cache[index][x][y][0];
-            z2 = cache[index][x][y][1];
-            cache[index][x][y] = ComplexMath.complexPow(z1, z2, 4, 0);
-            cache[index][x][y][0] += c1;
-            cache[index][x][y][1] += c2;
-            if (cache[index][x][y][0] * cache[index][x][y][0]
-                    + cache[index][x][y][1] * cache[index][x][y][1] > 4) {
-                return true;
+    public static void populateReverence(double... z){
+        int width = reference[0].length;
+        int height = reference[0][0].length;
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                reference[x][y][0] = z[0];
+                reference[x][y][1] = z[1];
             }
         }
-        return false;
     }
-    private static boolean cached_gahbrot(int x, int y, int index, int times) {
-        //re(sqrt(z^a))+i*im(sqrt(z^b))+c
-        double c1 = Renderer.p2cx(x);
-        double c2 = Renderer.p2cy(y);
-        double z1, z2;
-        double a = z1x;
-        double b = z1y;
-        for (int i = 0; i < times; i++) {
-            z1 = cache[index][x][y][0];
-            z2 = cache[index][x][y][1];
-            cache[index][x][y][0] = ComplexMath.complexPow(z1, z2, a, 0)[0] + c1;
-            cache[index][x][y][1] = ComplexMath.complexPow(z1, z2, b, 0)[1] + c2;
-            if (cache[index][x][y][0] * cache[index][x][y][0]
-                    + cache[index][x][y][1] * cache[index][x][y][1] > 4) {
-                return true;
-            }
-        }
-        return false;
-    }
-    private static boolean cached_burningShip(int x, int y, int index, int times){
-        double c1 = z1x;
-        double c2 = z1y * -1;// "*-1" for flipping vertically
-        if(!julia){
-            c1 = Renderer.p2cx(x);
-            c2 = Renderer.p2cy(y) * -1;// "*-1" for flipping vertically
-        }
-        for (int i = 0; i < times; i++) {
-            if(burningShip(x, y, c1, c2, index)) return true;
-            if(inverse) ComplexMath.s_inverse(x, y, index);
-        }
-        return false;
-    }
-    private static boolean burningShip(int x, int y, double c1, double c2, int index){
-        double z1 = Math.abs(cache[index][x][y][0]);
-        double z2 = Math.abs(cache[index][x][y][1]);
-        z1 = (z1 * z1 - z2 * z2) + c1;
-        z2 = (2 * Math.abs(cache[index][x][y][0] * z2)) + c2;
-        cache[index][x][y][0] = z1;
-        cache[index][x][y][1] = z2;
-        return (z1 * z1 + z2 * z2 > 4);
-    }
-    private static boolean cached_celtic(int x, int y, int index, int times){
-        double c1 = z1x;
-        double c2 = z1y;
-        if(!julia){
-            c1 = Renderer.p2cx(x);
-            c2 = Renderer.p2cy(y);
-        }
-        for (int i = 0; i < times; i++) {
-            if(celtic(x, y, c1, c2, index)) return true;
-            if(inverse) ComplexMath.s_inverse(x, y, index);
-        }
-        return false;
-    }
-    private static boolean celtic(int x, int y, double c1, double c2, int index){
-        double z2 = Math.abs((cache[index][x][y][0]*cache[index][x][y][0]) - (cache[index][x][y][1]*cache[index][x][y][1])) + c1;
-        double z1 = cache[index][x][y][0] * cache[index][x][y][1] * 2 + c2;
-        cache[index][x][y][0] = z1;
-        cache[index][x][y][1] = z2;
-        return (z1 * z1 + z2 * z2 > 4);
-    }
-    private static boolean cached_invMandelbrot(int x, int y, int index, int times){
-        double c1 = z1x;
-        double c2 = z1y;
-        if(!julia){
-            c1 = Renderer.p2cx(x);
-            c2 = Renderer.p2cy(y);
-        }
-        double abs2 = c1 * c1 + c2 * c2;
-        c1 = c1 / abs2;
-        c2 = -c2 / abs2;
-        for (int i = 0; i < times; i++) {
-            if(mandelbrot(x, y, c1, c2, index)) return true;
-            if(inverse) ComplexMath.s_inverse(x, y, index);
-        }
-        return false;
-    }
-    public static void setZ1(double... z){
-        assert z.length == 2;
-        Sets.z1x = z[0];
-        Sets.z1y = z[1];
+    public static void setZ1(double z1, double z2){
+        Sets.z1x = z1;
+        Sets.z1y = z2;
     }
     public static void setZPixel(int[] pixelPosition){
-        if (Controller.isCool(200)) {
-            try {
-                Sets.setZ1(
-                        Renderer.p2cx(pixelPosition[0]),
-                        Renderer.p2cy(pixelPosition[1])
-                );
-                Renderer.clearImage();
-            } catch (NullPointerException exception){
-                //pass
-            }
+        try {
+            Sets.setZ1(
+                    Renderer.p2cx(pixelPosition[0]),
+                    Renderer.p2cy(pixelPosition[1])
+            );
+            Renderer.clearImage();
+        } catch (NullPointerException exception){
+            //pass
         }
     }
     static String getInfo(){
-        String ret = "";
-        ret += "----------------------------------------------------------------"+"\n";
-        ret += (Renderer.fromX+" -> "+Renderer.toX+", "+Renderer.fromY+"i -> "+Renderer.toY+"i"+"\n");
-        ret += ("zoom: "+ Renderer.getZoom()+"\n");
+        String name = "";
         if(Sets.mode == Sets.FRACTAL) {
-            ret += ("Set: " +
-                    switch (Sets.setOfInterest) {
+            name = switch (Sets.setOfInterest) {
                         case 1 -> "Mandelbrot Set";
                         case 2 -> "Burning Ship Set";
                         case 3 -> "Celtic Set";
                         case 4 -> "Inverse Mandelbrot Set";
                         case 5 -> "Power Set";
                         default -> "Set not found.";
-                    }
-                    + "\n"
-            );
-            ret += ("Is Julia Set On: " + Sets.julia + "\n");
+            };
         }
-        ret += ("Z: " + Sets.z1x + "+" + Sets.z1y + "i" + "\n");
-        ret += ("----------------------------------------------------------------");
-        return ret;
+        String line = "-".repeat(63);
+        return """
+                %s
+                Set: %s
+                Coor: %f -> %f, %fi -> %fi
+                Zoom: %f
+                Z0: %f + %fi
+                %s
+                """.formatted(
+                line,
+                name,
+                Renderer.fromX, Renderer.toX, Renderer.fromY, Renderer.toY,
+                Renderer.getZoom(),
+                Sets.z1x, Sets.z1y,
+                line
+        );
     }
-    //-> cached_mandelbrot(x, y, index, n);
-    //            case 2 -> cached_burningShip(x, y, index, n);
-    //            case 3 -> cached_celtic(x, y, index, n);
-    //            case 4 -> cached_invMandelbrot(x, y, index, n);
-    //            case 5 -> cached_gahbrot(x, y, index, n);
+    static boolean isJulia() {
+        return julia;
+    }
+    static boolean isInverse() {
+        return inverse;
+    }
+    static void toggleInverse(){
+        inverse^=true;
+        Renderer.clearImage();
+    }
+    static void toggleJulia(){
+        julia^=true;
+        if(julia){
+
+        }else{
+
+        }
+        Renderer.clearImage();
+    }
 }
-
-
-
