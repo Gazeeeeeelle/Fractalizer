@@ -186,8 +186,8 @@ class Renderer extends Thread {
     }
     private static void initialize(){
         AffineTransform af = new AffineTransform();
-        af.setToScale((double) Window.width * 1.25 / (double) w,
-                (double) Window.height * 1.25 / (double) h
+        af.setToScale((double) Window.width  / (double) w,
+                (double) Window.height / (double) h
         );
         g.setTransform(af);
     }

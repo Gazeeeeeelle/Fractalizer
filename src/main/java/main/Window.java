@@ -6,10 +6,10 @@ import java.awt.event.*;
 
 class Window extends JFrame implements MouseMotionListener, MouseListener, KeyListener, MouseWheelListener {
     static int
-            width = 814,
-            height = 814,
-            jpWidth = 814, //814 //FIXME
-            jpHeight = 814; //814 //FIXME
+            width = 1000,
+            height = 1000,
+            jpWidth = 1000, //814 //FIXME
+            jpHeight = 1000; //814 //FIXME
     static JPanel fractalizer = new JPanel();
     static JPanel panel = new JPanel();
     static Point mousePt = new Point(0, 0);
