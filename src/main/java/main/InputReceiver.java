@@ -169,6 +169,8 @@ class InputReceiver extends Thread{
                         checkParseAbilityInteger(split);
                         Calculator.destroyCalculatorSet();
                         Calculator.buildCalculatorSet(
+                                Renderer.w,
+                                Renderer.h,
                                 Integer.parseInt(split[0]),
                                 Integer.parseInt(split[1])
                         );
@@ -276,13 +278,13 @@ class InputReceiver extends Thread{
         var concat = "";
         if(hasEmpty(strings)) return false;
         concat = concatAll(strings);
-        return !concat.matches("^[ 0-9]");
+        return !concat.matches("^[ /d]");
     }
     private boolean isAbleToParseIntoDouble(String... strings){
         var concat = "";
         if(hasEmpty(strings)) return false;
         concat = concatAll(strings);
-        return !concat.matches("^[e. 0-9]");
+        return !concat.matches("^[e. /d]");
     }
     private boolean hasEmpty(String... strings){
         for(String string : strings){

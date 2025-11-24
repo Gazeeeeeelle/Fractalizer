@@ -7,6 +7,9 @@ import static main.Renderer.*;
 class Calculator extends Thread{
     static Calculator[] calc;
     static boolean isOn = true;
+    static boolean preCalculation;
+    int width;
+    int height;
     int order;
     int index;
     int precision = 0;
@@ -15,7 +18,9 @@ class Calculator extends Thread{
     double[] c;
     double[] c2;
     double density = 5;
-    Calculator(int order, int index){
+    Calculator(int width, int height, int order, int index){
+        this.width = width;
+        this.height = height;
         this.order = order;
         this.index = index;
     }
@@ -27,7 +32,7 @@ class Calculator extends Thread{
                     case Sets.DIR -> dir();
                     case Sets.FRACTAL -> {
                         fractal();
-                        n = (Renderer.night ? Sets.solN : 1);
+                        n = Renderer.isPinpointPrecision() ? Sets.solN : 1;
                     }
                     case Sets.ABS -> abs();
                 }
@@ -41,8 +46,8 @@ class Calculator extends Thread{
         }
     }
     private void fractal(){
-        for (int y = 0; y < Window.jpHeight; y++) {
-            for (int x = index; x < Window.jpWidth; x += order) {
+        for (int y = 0; y < height; y++) {
+            for (int x = index; x < width; x += order) {
                 if (!isOn) return;
                 if (img.getRGB(x, y) == 0xff000000) {
                     Renderer.draw_frac(x, y, precision, n);
@@ -51,8 +56,8 @@ class Calculator extends Thread{
         }
     }
     private void abs(){
-        for (int y = 0; y < Window.jpHeight; y++) {
-            for (int x = index; x < Window.jpWidth; x += order) {
+        for (int y = 0; y < height; y++) {
+            for (int x = index; x < width; x += order) {
                 if(!isOn) return;
                 Renderer.draw_abs(x, y, 0, precision+1);
             }
@@ -94,17 +99,20 @@ class Calculator extends Thread{
             }
         }
     }
-    static void resetPrecision(){
+    static void resetPrecisions(){
+        int p = (preCalculation ? findPrecision() : 0);
+        System.out.println(p);
+        for(Calculator c : calc){
+            resetPrecision(c, p);
+        }
+    }
+    private static void resetPrecision(Calculator calculator, int p){
         if(Sets.mode == Sets.FRACTAL) {
-            int p = (Renderer.preCalcRange ? findPrecision() : 0);
-            for (Calculator c : calc) {
-                c.precision = (Renderer.night ? Sets.solN : p);
-                c.n = (Renderer.night ? Sets.solN : p+1);
-            }
+            boolean isPinpoint = Renderer.isPinpointPrecision();
+            calculator.precision = (isPinpoint ? Sets.solN : p);
+            calculator.n = (isPinpoint ? Sets.solN : p+1);
         }else{
-            for (Calculator c : calc) {
-                c.precision =  0;
-            }
+            calculator.precision = 0;
         }
     }
     private static int findPrecision(){
@@ -121,11 +129,11 @@ class Calculator extends Thread{
             if(p > max) return max;
         }
     }
-    static void buildCalculatorSet(int nOfCalc, int priority){
+    static void buildCalculatorSet(int width, int height, int nOfCalc, int priority){
         nOfCalc = Renderer.limitToRange(nOfCalc, 0, 12);
         calc = new Calculator[nOfCalc];
         for (int i = 0; i < nOfCalc; i++) {
-            calc[i] = new Calculator(nOfCalc, i);
+            calc[i] = new Calculator(width, height, nOfCalc, i);
         }
         for (int i = 0; i < nOfCalc; i++) {
             calc[i].setPriority(Renderer.limitToRange(priority, 1, 10));

@@ -9,7 +9,7 @@ class ComplexMath {
         double[] cs = cosSinPair(-p2cy(y)*Math.log(nth));
         Sets.cache[index][x][y][0] += ka*cs[0];
         Sets.cache[index][x][y][1] += ka*cs[1];
-        if(Sets.inverse) s_inverse(x, y, index);
+        if(Sets.isInverse()) s_inverse(x, y, index);
     }
     static double[] add(double[] z, double cr, double ci){
         z[0]+=cr;
@@ -22,7 +22,7 @@ class ComplexMath {
         double[] cs = cosSinPair(-i[1]*Math.log(nth));
         Sets.cache[index][x][y][0] += ka*cs[0];
         Sets.cache[index][x][y][1] += ka*cs[1];
-        if(Sets.inverse) s_inverse(x, y, index);
+        if(Sets.isInverse()) s_inverse(x, y, index);
     }
     static double[] zetaFunctionQ(double a, double b, double c, double d, int depth){
         double[] ret = new double[]{0,0};
