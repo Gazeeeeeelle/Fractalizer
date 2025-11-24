@@ -5,14 +5,18 @@ import java.awt.*;
 import java.awt.event.*;
 
 class Window extends JFrame implements MouseMotionListener, MouseListener, KeyListener, MouseWheelListener {
-    static int
+    int
             width = 1000,
             height = 1000,
             jpWidth = 1000, //814 //FIXME
             jpHeight = 1000; //814 //FIXME
     static JPanel fractalizer = new JPanel();
     static JPanel panel = new JPanel();
-    static Point mousePt = new Point(0, 0);
+    private static Point mousePt = new Point(0, 0);
+    private static final Controller controller = new Controller();
+    static {
+        controller.useMap(controller.keyMap1);
+    }
 
     Window() {
         this.setPreferredSize(new Dimension(width, height));
@@ -27,15 +31,16 @@ class Window extends JFrame implements MouseMotionListener, MouseListener, KeyLi
         fractalizer.addMouseListener(this);
         fractalizer.addMouseWheelListener(this);
         fractalizer.setSize(new Dimension(width, height));
-        fractalizer.setLayout(null);
         fractalizer.setBackground(Color.black);
         fractalizer.setFocusable(true);
 
         this.add(panel);
         this.add(fractalizer);
         this.pack();
+
         this.setVisible(true);
     }
+
     @Override
     public void mouseDragged(MouseEvent e) {
         int dx = e.getX() - (int) mousePt.getX();
@@ -54,20 +59,14 @@ class Window extends JFrame implements MouseMotionListener, MouseListener, KeyLi
     }
     @Override
     public void mouseReleased(MouseEvent e) {
-        Calculator.resetPrecision();
+        Calculator.resetPrecisions();
         Calculator.isOn = true;
     }
     @Override
     public void keyPressed(KeyEvent e) {
-        Controller.operate(e);
-        try {
-            int set = Integer.parseInt(String.valueOf(e.getKeyChar()));
-            Renderer.chooseSet(set);
-        } catch (NumberFormatException exception) {
-            //pass
-        }
+        controller.operate(e);
     }
-    public static int[] getMousePos(){
+    static int[] getMousePos(){
         Point p = fractalizer.getMousePosition();
         if(p==null)return null;
         return new int[]{
