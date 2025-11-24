@@ -1,19 +1,21 @@
-package main;
+package main.complexMath;
 
-final class Sets {
+import main.Renderer;
+
+public final class Sets {
     private Sets(){}
-    static int setOfInterest = 1;
-    static final int FRACTAL = 1,
+    public static int setOfInterest = 1;
+    public static final int FRACTAL = 1,
                      ABS = 2,
                      DIR = 3;
-    static int mode = FRACTAL;
+    public static int mode = FRACTAL;
     private static boolean
                 julia = false,
                 inverse = false;
-    static boolean connectLines = false;
-    static double topographicStep = .1;
+    public static boolean connectLines = false;
+    public static double topographicStep = .1;
     static double z1x = 0.0, z1y = 0.0;
-    static int solN = 100;
+    public static int solN = 100;
     private static final double[][][] reference = new double[Renderer.w][Renderer.h][2];
     static double[][][][] cache =
             new double[2][Renderer.w][Renderer.h][2]; //FIXME cache should be at the calculator
@@ -57,11 +59,12 @@ final class Sets {
                 + cache[i][x][y][1] * cache[i][x][y][1] > 4);
     };
     private static final ComplexFunction[] sets = new ComplexFunction[]{null, mandelbrot, burningShip, celtic, powerBrot};
-    static boolean calc_frac(int x, int y, int index, int n){
+
+    public static boolean calc_frac(int x, int y, int index, int n){
         return cached_generalized(sets[setOfInterest], x, y, index, n);
     }
     //TODO evaluate: Should there be a calculate function that receives Sets.mode to then decide which to call?
-    static double[] calc_dir(double x, double y, int set){
+    public static double[] calc_dir(double x, double y, int set){
         return switch (set) {
             case 1 -> ComplexMath.complexPow(x, y, z1x, z1y);
             case 2 -> ComplexMath.complexPow(x, y, x, y);
@@ -70,7 +73,7 @@ final class Sets {
             default -> new double[]{0, 0};
         };
     }
-    static boolean calc_abs(int x, int y, int index, int nth){
+    public static boolean calc_abs(int x, int y, int index, int nth){
         switch (setOfInterest) {
             case 1 -> ComplexMath.fibonacci_C(x, y, index);
             case 2 -> ComplexMath.zetaFunction(x, y, index, nth);
@@ -106,9 +109,9 @@ final class Sets {
         cache[index][x][y][0] = reference[x][y][0];
         cache[index][x][y][1] = reference[x][y][1];
     }
-    public static void populateReverence(double... z){
-        int width = reference[0].length;
-        int height = reference[0][0].length;
+    private static void populateReverence(double... z){
+        int width = reference.length;
+        int height = reference[0].length;
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 reference[x][y][0] = z[0];
@@ -116,9 +119,19 @@ final class Sets {
             }
         }
     }
-    public static void setZ1(double z1, double z2){
-        Sets.z1x = z1;
-        Sets.z1y = z2;
+    public static void populateReverenceJulia(){
+        int width = reference.length;
+        int height = reference[0].length;
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                reference[x][y][0] = Renderer.p2cx(x);
+                reference[x][y][1] = Renderer.p2cy(y);
+            }
+        }
+    }
+    public static void setZ1(Double z1, Double z2){
+        if(z1!=null) Sets.z1x = z1;
+        if(z2!=null) Sets.z1y = z2;
     }
     public static void setZPixel(int[] pixelPosition){
         try {
@@ -131,7 +144,7 @@ final class Sets {
             //pass
         }
     }
-    static String getInfo(){
+    public static String getInfo(){
         String name = "";
         if(Sets.mode == Sets.FRACTAL) {
             name = switch (Sets.setOfInterest) {
@@ -154,29 +167,37 @@ final class Sets {
                 """.formatted(
                 line,
                 name,
-                Renderer.fromX, Renderer.toX, Renderer.fromY, Renderer.toY,
+                Renderer.getFromX(), Renderer.getToX(), Renderer.getFromY(), Renderer.getToY(),
                 Renderer.getZoom(),
                 Sets.z1x, Sets.z1y,
                 line
         );
     }
-    static boolean isJulia() {
+    public static boolean isJulia() {
         return julia;
     }
     static boolean isInverse() {
         return inverse;
     }
-    static void toggleInverse(){
+    public static void toggleInverse(){
         inverse^=true;
         Renderer.clearImage();
     }
-    static void toggleJulia(){
+    public static void toggleJulia(){
         julia^=true;
         if(julia){
-
+            populateReverenceJulia();
         }else{
-
+            populateReverence(z1x, z1y);
         }
         Renderer.clearImage();
+    }
+    public static void chooseSet(int set){
+        if(set > 0 && set <= sets.length){
+            setOfInterest = set;
+        }
+    }
+    public static double[] getFromCache(int x, int y, int index){
+        return cache[index][x][y];
     }
 }

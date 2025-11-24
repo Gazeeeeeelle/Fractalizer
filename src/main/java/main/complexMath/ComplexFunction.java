@@ -1,5 +1,5 @@
-package main;
+package main.complexMath;
 
-public interface ComplexFunction {
+interface ComplexFunction {
     boolean cf(int x, int y, double c1, double c2, int index);
 }

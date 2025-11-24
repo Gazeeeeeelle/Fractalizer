@@ -1,5 +1,7 @@
 package main;
 
+import main.complexMath.Sets;
+
 import java.awt.event.KeyEvent;
 import java.util.Hashtable;
 import java.util.regex.Pattern;
@@ -51,7 +53,7 @@ final class Controller {
     Map keyMap1 = new Map()
             .map("G", e -> {
                 if (isCool(200)) {
-                    Sets.setZ1(0, 0);
+                    Sets.setZ1(0d, 0d);
                     Renderer.clearImage();
                 }
             })

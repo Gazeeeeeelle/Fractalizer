@@ -1,5 +1,7 @@
 package main;
 
+import main.complexMath.Sets;
+
 import java.nio.channels.IllegalChannelGroupException;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -204,7 +206,7 @@ class InputReceiver extends Thread{
                     String answer = ask("Enter Re(Z): ");
                     try {
                         checkParseAbilityDouble(answer);
-                        Sets.setZ1(Double.parseDouble(answer), Sets.z1y);
+                        Sets.setZ1(Double.parseDouble(answer), null);
                         Renderer.clearImage();
                     } catch (IllegalArgumentException e) {
                         System.out.println(e.getMessage());
@@ -219,7 +221,7 @@ class InputReceiver extends Thread{
                 () -> {
                     String answer = ask("Enter Im(Z): ");
                     try {
-                        Sets.setZ1(Sets.z1x, Double.parseDouble(answer));
+                        Sets.setZ1(null, Double.parseDouble(answer));
                         Renderer.clearImage();
                     } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
                         return 1;
@@ -239,8 +241,8 @@ class InputReceiver extends Thread{
                 "c|center",
                 "set center",
                 () -> {
-                    double dx = Renderer.toX-Renderer.fromX;
-                    double dy = Renderer.toY-Renderer.fromY;
+                    double dx = Renderer.getToX()-Renderer.getFromX();
+                    double dy = Renderer.getToY()-Renderer.getFromY();
                     String answer = ask("Enter C: ");
                     try {
                         double[] c = parseComplexNumber(answer);

@@ -1,5 +1,8 @@
 package main;
 
+import main.complexMath.ComplexMath;
+import main.complexMath.Sets;
+
 abstract class Colors {
     static int whichColorPalette = 0;
     static int[] //Color palettes:

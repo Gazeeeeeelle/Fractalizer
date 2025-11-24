@@ -1,9 +1,9 @@
-package main;
+package main.complexMath;
 
 import static main.Renderer.p2cx;
 import static main.Renderer.p2cy;
 
-class ComplexMath {
+public class ComplexMath {
     static void zetaFunction(int x, int y, int index, int nth){
         double ka = Math.pow(nth, -p2cx(x));
         double[] cs = cosSinPair(-p2cy(y)*Math.log(nth));
@@ -58,7 +58,7 @@ class ComplexMath {
         Sets.cache[index][x][y][0] = z[0];
         Sets.cache[index][x][y][1] = z[1];
     }
-    static double[] inverse(double... z){
+    public static double[] inverse(double... z){
         assert z.length==2;
         double phi2 = -arg(z[0], z[1]);
         double[] cs = cosSinPair(phi2);
@@ -126,7 +126,7 @@ class ComplexMath {
                 -Math.sin(a)*Math.sinh(b)
         };
     }
-    static double arg(double a, double b){
+    public static double arg(double a, double b){
         return Math.atan2(b, a);
     }
     @Deprecated

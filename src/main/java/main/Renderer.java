@@ -1,5 +1,8 @@
 package main;
 
+import main.complexMath.ComplexMath;
+import main.complexMath.Sets;
+
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -8,9 +11,9 @@ import java.io.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-import static main.Sets.clearCache;
+import static main.complexMath.Sets.clearCache;
 
-class Renderer extends Thread {
+public class Renderer extends Thread {
     private static final Window window = new Window();
     static boolean special = false;
     public static final int w = window.jpWidth;
@@ -23,12 +26,12 @@ class Renderer extends Thread {
             img_g = (Graphics2D) img.getGraphics(), //BufferedImage's graphics
             ovr_g = (Graphics2D) ovr.getGraphics(), //Second BufferedImage's graphics
             g = (Graphics2D) Window.fractalizer.getGraphics(); //Window's JPanel's graphics
-    static double //Rendering bounds:
+    private static double //Rendering bounds:
             fromX = ((double) w / h * -2),
             toX = ((double) w / h * 2),
             fromY = -2,
             toY = 2;
-    static final double[] initialCoordinates = new double[]{fromX, toX, fromY, toY};
+    private static final double[] initialCoordinates = new double[]{fromX, toX, fromY, toY};
     static private boolean //options:
             showPosition = false,
             showAxis = false,
@@ -133,12 +136,12 @@ class Renderer extends Thread {
             if(Sets.isJulia()){
                 img.setRGB(
                         x, y,
-                        Colors.getColorDir(ComplexMath.inverse(Sets.cache[index][x][y]))
+                        Colors.getColorDir(ComplexMath.inverse(Sets.getFromCache(x, y, index)))
                 );
             }else {
                 img.setRGB(
                         x, y,
-                        Colors.getColorDir(Sets.cache[index][x][y])
+                        Colors.getColorDir(Sets.getFromCache(x, y, index))
                 );
             }
         }
@@ -180,7 +183,7 @@ class Renderer extends Thread {
         );
         g.setTransform(af);
     }
-    static void clearImage(){
+    public static void clearImage(){
         turnOff();
         clearImage(img_black);
         turnOn();
@@ -267,7 +270,7 @@ class Renderer extends Thread {
         }
         return ret;
     }
-    static double getZoom(){
+    public static double getZoom(){
         return (4/(Renderer.toY-Renderer.fromY));
     }
     static void screenshot(){
@@ -283,11 +286,11 @@ class Renderer extends Thread {
             throw new RuntimeException(e);
         }
     }
-    static double p2cx(int px){
+    public static double p2cx(int px){
         return ((toX - fromX) * ((double)px/ w))
                 + fromX;
     }
-    static double p2cy(int py){
+    public static double p2cy(int py){
         return ((fromY - toY) * ((double)py / h))
                 + toY;
     }
@@ -304,7 +307,7 @@ class Renderer extends Thread {
         clearImage();
         img_g.setColor(Color.black);
         img_g.fillRect(0,0, w, h);
-        Sets.setOfInterest = set;
+        Sets.chooseSet(set);
         turnOn();
     }
     static void move(int dx, int dy){
@@ -379,4 +382,19 @@ class Renderer extends Thread {
         return pinpointPrecision;
     }
 
+    public static double getFromX() {
+        return fromX;
+    }
+
+    public static double getToX() {
+        return toX;
+    }
+
+    public static double getFromY() {
+        return fromY;
+    }
+
+    public static double getToY() {
+        return toY;
+    }
 }

@@ -1,5 +1,7 @@
 package main;
 
+import main.complexMath.Sets;
+
 import java.awt.*;
 
 import static main.Renderer.*;
@@ -7,7 +9,7 @@ import static main.Renderer.*;
 class Calculator extends Thread{
     static Calculator[] calc;
     static boolean isOn = true;
-    static boolean preCalculation;
+    static boolean preCalculation = true;
     int width;
     int height;
     int order;
