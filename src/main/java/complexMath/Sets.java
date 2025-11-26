@@ -1,4 +1,4 @@
-package main.complexMath;
+package complexMath;
 
 import main.Renderer;
 
@@ -24,7 +24,7 @@ public final class Sets {
         clearCache(0, 1);
     }
     //Complex functions for rendering fractals
-    private static final ComplexFunction //Treating as a "Fractal" class is too slow.
+    private static final IComplexFunction //Treating as a "Fractal" class is too slow.
     mandelbrot = (x, y, c1, c2, i) -> {
         double z1 = cache[i][x][y][0];
         cache[i][x][y][0] = z1 * z1 - (cache[i][x][y][1] * cache[i][x][y][1]) + c1;
@@ -58,12 +58,14 @@ public final class Sets {
         return (cache[i][x][y][0] * cache[i][x][y][0]
                 + cache[i][x][y][1] * cache[i][x][y][1] > 4);
     };
-    private static final ComplexFunction[] sets = new ComplexFunction[]{null, mandelbrot, burningShip, celtic, powerBrot};
+    private static final IComplexFunction[] sets = new IComplexFunction[]{null, mandelbrot, burningShip, celtic, powerBrot};
 
     public static boolean calc_frac(int x, int y, int index, int n){
         return cached_generalized(sets[setOfInterest], x, y, index, n);
     }
     //TODO evaluate: Should there be a calculate function that receives Sets.mode to then decide which to call?
+    //I don't think that would impact performance at all if done. That is because the process of "selecting" which mode
+    //it is going to operate would just be transferred from Calculator.java to Sets.java
     public static double[] calc_dir(double x, double y, int set){
         return switch (set) {
             case 1 -> ComplexMath.complexPow(x, y, z1x, z1y);
@@ -81,7 +83,7 @@ public final class Sets {
         }
         return true;
     }
-    private static boolean cached_generalized(ComplexFunction fr, int x, int y, int index, int times){
+    private static boolean cached_generalized(IComplexFunction fr, int x, int y, int index, int times){
         double c1 = z1x;
         double c2 = z1y;
         if (!julia) {

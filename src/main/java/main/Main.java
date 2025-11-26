@@ -9,8 +9,5 @@ class Main {
 
         InputReceiver inputReceiver = new InputReceiver();
         inputReceiver.start();
-
-        Test test = new Test();
-        test.start();
     }
 }

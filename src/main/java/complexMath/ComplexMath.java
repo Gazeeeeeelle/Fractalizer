@@ -1,4 +1,4 @@
-package main.complexMath;
+package complexMath;
 
 import static main.Renderer.p2cx;
 import static main.Renderer.p2cy;

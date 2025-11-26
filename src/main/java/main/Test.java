@@ -6,7 +6,7 @@ public class Test extends Thread{
         int limit = 300;
         long time = System.currentTimeMillis();
         for(;;){
-            if(Calculator.calc[0].precision > limit){
+            if(Calculator.calc[0].getPrecision() > limit){
                 System.out.println(System.currentTimeMillis()-time);
                 Renderer.clearImage();
                 time = System.currentTimeMillis();

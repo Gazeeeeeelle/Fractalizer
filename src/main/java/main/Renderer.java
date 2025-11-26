@@ -1,7 +1,7 @@
 package main;
 
-import main.complexMath.ComplexMath;
-import main.complexMath.Sets;
+import complexMath.ComplexMath;
+import complexMath.Sets;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -11,17 +11,18 @@ import java.io.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-import static main.complexMath.Sets.clearCache;
+import static complexMath.Sets.clearCache;
 
 public class Renderer extends Thread {
     private static final Window window = new Window();
     static boolean special = false;
     public static final int w = window.jpWidth;
     public static final int h = window.jpHeight;
-    static BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-    static BufferedImage img_black = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-    static BufferedImage ovr = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-    static BufferedImage ovr_blank = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+    private static final BufferedImage
+            img = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB),
+            img_black = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB),
+            ovr = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB),
+            ovr_blank = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
     private static final Graphics2D
             img_g = (Graphics2D) img.getGraphics(), //BufferedImage's graphics
             ovr_g = (Graphics2D) ovr.getGraphics(), //Second BufferedImage's graphics
@@ -32,14 +33,14 @@ public class Renderer extends Thread {
             fromY = -2,
             toY = 2;
     private static final double[] initialCoordinates = new double[]{fromX, toX, fromY, toY};
-    static private boolean //options:
+    private static boolean //options:
             showPosition = false,
             showAxis = false,
             pinpointPrecision = false;
     @Override
     public void run(){
         initialize();
-        Calculator.buildCalculatorSet(w, h, 1, 1);
+        Calculator.buildCalculatorSet(w, h, 3, 3);//initial threads
         while(true){
 
             if(showAxis) {
@@ -103,7 +104,7 @@ public class Renderer extends Thread {
             }
         }
     }
-    private static double findDelta(){
+    private static double findDelta(){ //FIXME rename to something more suggestive
         int d = 2;
         return Math.pow(2, ((int)log2(toX-fromX) - d));
     }
@@ -172,9 +173,8 @@ public class Renderer extends Thread {
     static int limitToRange(int value, int min, int max){
         return Math.max(Math.min(value, max), min);
     }
-    static boolean isDraw(int x, int y, int times){
-        clearCache(x, y, 1);
-        return Sets.calc_frac(x, y, 1, times);
+    static boolean isDraw(int x, int y){
+        return Sets.calc_frac(x, y, 1, 1);
     }
     private static void initialize(){
         AffineTransform af = new AffineTransform();
@@ -360,10 +360,10 @@ public class Renderer extends Thread {
         }
         img.setData(local.getRaster());
     }
-    static void turnOff(){
+    private static void turnOff(){
         Calculator.isOn = false;
     }
-    static void turnOn(){
+    private static void turnOn(){
         Calculator.isOn = true;
     }
     static void togglePosition(){
@@ -381,20 +381,34 @@ public class Renderer extends Thread {
     static boolean isPinpointPrecision(){
         return pinpointPrecision;
     }
-
     public static double getFromX() {
         return fromX;
     }
-
     public static double getToX() {
         return toX;
     }
-
     public static double getFromY() {
         return fromY;
     }
-
     public static double getToY() {
         return toY;
+    }
+    public static int getRGB(int x, int y){
+        return img.getRGB(x, y);
+    }
+    static int preCalculateStartingPrecision(){
+        int horizontalSpacing = 9;
+        int verticalSpacing = 9;
+        int max = (int)Math.log10(getZoom()) * 100;
+        int p = 0;
+        clearCache(1);
+        for(; p < max; p++){
+            for (int x = 0; x < w; x += horizontalSpacing+1) {
+                for (int y = 0; y < h; y += verticalSpacing+1) {
+                    if(isDraw(x, y)) return p-1;
+                }
+            }
+        }
+        return p-1;
     }
 }

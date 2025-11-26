@@ -1,25 +1,23 @@
 package main;
 
-import main.complexMath.Sets;
+import complexMath.Sets;
 
 import java.awt.*;
-
-import static main.Renderer.*;
 
 class Calculator extends Thread{
     static Calculator[] calc;
     static boolean isOn = true;
     static boolean preCalculation = true;
-    int width;
-    int height;
-    int order;
-    int index;
-    int precision = 0;
-    int n = 1;
-    boolean purpose = true;
+    static private final double density = 5;
+    private final int width;
+    private final int height;
+    private final int order;
+    private final int index;
+    private int precision = 0;
+    private int n = 1;
+    private boolean purpose = true;
     double[] c;
     double[] c2;
-    double density = 5;
     Calculator(int width, int height, int order, int index){
         this.width = width;
         this.height = height;
@@ -51,7 +49,7 @@ class Calculator extends Thread{
         for (int y = 0; y < height; y++) {
             for (int x = index; x < width; x += order) {
                 if (!isOn) return;
-                if (img.getRGB(x, y) == 0xff000000) {
+                if (Renderer.getRGB(x, y) == 0xff000000) {
                     Renderer.draw_frac(x, y, precision, n);
                 }
             }
@@ -102,33 +100,19 @@ class Calculator extends Thread{
         }
     }
     static void resetPrecisions(){
-        int p = (preCalculation ? findPrecision() : 0);
+        int p = (preCalculation ? Renderer.preCalculateStartingPrecision() : 0);
         System.out.println(p);
         for(Calculator c : calc){
-            resetPrecision(c, p);
+            c.resetPrecision(p);
         }
     }
-    private static void resetPrecision(Calculator calculator, int p){
+    private void resetPrecision(int p){
         if(Sets.mode == Sets.FRACTAL) {
             boolean isPinpoint = Renderer.isPinpointPrecision();
-            calculator.precision = (isPinpoint ? Sets.solN : p);
-            calculator.n = (isPinpoint ? Sets.solN : p+1);
+            this.precision = (isPinpoint ? Sets.solN : p);
+            this.n = (isPinpoint ? Sets.solN : p+1);
         }else{
-            calculator.precision = 0;
-        }
-    }
-    private static int findPrecision(){
-        int p = 0;
-        int sp = Renderer.w/10;
-        int max = (int)Math.log10(Renderer.getZoom()) * 100;
-        for(;;){
-            for (int x = 0; x < img.getWidth(); x+=sp+1) {
-                for (int y = 0; y < img.getHeight(); y+=sp+1) {
-                    if(isDraw(x, y, p+1)) return p;
-                }
-            }
-            p++;
-            if(p > max) return max;
+            this.precision = 0;
         }
     }
     static void buildCalculatorSet(int width, int height, int nOfCalc, int priority){
@@ -152,5 +136,8 @@ class Calculator extends Thread{
         }catch (NullPointerException e){
             //pass
         }
+    }
+    public int getPrecision(){
+        return precision;
     }
 }

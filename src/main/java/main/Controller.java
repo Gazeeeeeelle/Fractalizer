@@ -1,6 +1,6 @@
 package main;
 
-import main.complexMath.Sets;
+import complexMath.Sets;
 
 import java.awt.event.KeyEvent;
 import java.util.Hashtable;
