@@ -29,12 +29,12 @@ class Calculator extends Thread{
         while(purpose){
             if(isOn) {
                 switch (Sets.mode){
-                    case Sets.DIR -> dir();
-                    case Sets.FRACTAL -> {
+                    case DIR -> dir();
+                    case FRACTAL -> {
                         fractal();
                         n = Renderer.isPinpointPrecision() ? Sets.solN : 1;
                     }
-                    case Sets.ABS -> abs();
+                    case ABS -> abs();
                 }
                 precision++;
             }
@@ -101,13 +101,12 @@ class Calculator extends Thread{
     }
     static void resetPrecisions(){
         int p = (preCalculation ? Renderer.preCalculateStartingPrecision() : 0);
-        System.out.println(p);
         for(Calculator c : calc){
             c.resetPrecision(p);
         }
     }
     private void resetPrecision(int p){
-        if(Sets.mode == Sets.FRACTAL) {
+        if(Sets.mode == complexMath.Mode.FRACTAL) {
             boolean isPinpoint = Renderer.isPinpointPrecision();
             this.precision = (isPinpoint ? Sets.solN : p);
             this.n = (isPinpoint ? Sets.solN : p+1);

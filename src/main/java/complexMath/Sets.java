@@ -5,10 +5,7 @@ import main.Renderer;
 public final class Sets {
     private Sets(){}
     public static int setOfInterest = 1;
-    public static final int FRACTAL = 1,
-                     ABS = 2,
-                     DIR = 3;
-    public static int mode = FRACTAL;
+    public static Mode mode = Mode.FRACTAL;
     private static boolean
                 julia = false,
                 inverse = false;
@@ -108,6 +105,7 @@ public final class Sets {
         }
     }
     public static void clearCache(int x, int y, int index){
+        if(julia) populateReverenceJulia(x, y);
         cache[index][x][y][0] = reference[x][y][0];
         cache[index][x][y][1] = reference[x][y][1];
     }
@@ -121,34 +119,43 @@ public final class Sets {
             }
         }
     }
-    public static void populateReverenceJulia(){
+    private static void populateReverenceJulia(){
         int width = reference.length;
         int height = reference[0].length;
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                reference[x][y][0] = Renderer.p2cx(x);
-                reference[x][y][1] = Renderer.p2cy(y);
+                populateReverenceJulia(x, y);
             }
         }
+    }
+    private static void populateReverenceJulia(int x, int y){
+        reference[x][y][0] = Renderer.p2cx(x);
+        reference[x][y][1] = Renderer.p2cy(y);
     }
     public static void setZ1(Double z1, Double z2){
         if(z1!=null) Sets.z1x = z1;
         if(z2!=null) Sets.z1y = z2;
+        populate(z1x, z1y);
+        Renderer.clearImage();
+    }
+    public static void populate(double z1, double z2){
+        if(isJulia()){
+            populateReverenceJulia();
+        }else{
+            populateReverence(z1, z2);
+        }
     }
     public static void setZPixel(int[] pixelPosition){
-        try {
-            Sets.setZ1(
-                    Renderer.p2cx(pixelPosition[0]),
-                    Renderer.p2cy(pixelPosition[1])
-            );
-            Renderer.clearImage();
-        } catch (NullPointerException exception){
-            //pass
-        }
+        if(pixelPosition == null) return;
+        Sets.setZ1(
+                Renderer.p2cx(pixelPosition[0]),
+                Renderer.p2cy(pixelPosition[1])
+        );
+        Renderer.clearImage();
     }
     public static String getInfo(){
         String name = "";
-        if(Sets.mode == Sets.FRACTAL) {
+        if(Sets.mode == Mode.FRACTAL) {
             name = switch (Sets.setOfInterest) {
                         case 1 -> "Mandelbrot Set";
                         case 2 -> "Burning Ship Set";
@@ -186,6 +193,7 @@ public final class Sets {
         Renderer.clearImage();
     }
     public static void toggleJulia(){
+        Renderer.turnOff();
         julia^=true;
         if(julia){
             populateReverenceJulia();
@@ -193,6 +201,7 @@ public final class Sets {
             populateReverence(z1x, z1y);
         }
         Renderer.clearImage();
+
     }
     public static void chooseSet(int set){
         if(set > 0 && set <= sets.length){
@@ -201,5 +210,24 @@ public final class Sets {
     }
     public static double[] getFromCache(int x, int y, int index){
         return cache[index][x][y];
+    }
+    public static void nextMode(){
+        Mode[] modes = Mode.values();
+        int i = Sets.mode.ordinal();
+        if(i < modes.length - 1){
+            Sets.mode = modes[i + 1];
+            Renderer.clearImage();
+        }
+    }
+    public static void previousMode(){
+        Mode[] modes = Mode.values();
+        int i = Sets.mode.ordinal();
+        if(i > 0){
+            Sets.mode = modes[i - 1];
+            Renderer.clearImage();
+        }
+    }
+    public static void resetTopographicStep(){
+        topographicStep = .1;
     }
 }

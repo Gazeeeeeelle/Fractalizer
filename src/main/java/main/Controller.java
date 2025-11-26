@@ -54,13 +54,10 @@ final class Controller {
             .map("G", e -> {
                 if (isCool(200)) {
                     Sets.setZ1(0d, 0d);
-                    Renderer.clearImage();
                 }
             })
             .map("F", e -> {
-                if(Window.getMousePos() != null && isCool(200)) {
-                    Sets.setZPixel(Window.getMousePos());
-                }
+                if(isCool(200)) Sets.setZPixel(Window.getMousePos());
             })
             .map("E", e -> {
                 Renderer.special ^= true;
@@ -68,7 +65,6 @@ final class Controller {
             })
             .map("O", e -> {
                 Renderer.resetRange();
-                Renderer.clearImage();
             })
             .map("H", e -> {
                 Sets.toggleInverse();
@@ -82,7 +78,7 @@ final class Controller {
                 Sets.connectLines ^= true;
                 Renderer.clearImage();
             })
-            .map("C", e -> Renderer.centerAtPixel(Window.getMousePos()))
+            .map("C", e -> Renderer.centerAtPixel())
             .map("N", e -> {
                 Renderer.togglePinpointPrecision();
                 Renderer.clearImage();
@@ -94,14 +90,8 @@ final class Controller {
             })
             .map("S", e -> Renderer.togglePosition())
             .map("A", e -> Renderer.toggleAxis())
-            .map("Right", e -> {
-                Sets.mode++;
-                Renderer.clearImage();
-            })
-            .map("Left", e -> {
-                Sets.mode--;
-                Renderer.clearImage();
-            })
+            .map("Right", e -> Sets.nextMode())
+            .map("Left", e -> Sets.previousMode())
             .map("Up", e -> {
                 Colors.shiftColorPalette(1);
                 Renderer.clearImage();

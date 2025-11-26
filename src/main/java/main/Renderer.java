@@ -11,7 +11,7 @@ import java.io.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-import static complexMath.Sets.clearCache;
+import static complexMath.Sets.*;
 
 public class Renderer extends Thread {
     private static final Window window = new Window();
@@ -40,7 +40,7 @@ public class Renderer extends Thread {
     @Override
     public void run(){
         initialize();
-        Calculator.buildCalculatorSet(w, h, 3, 3);//initial threads
+        Calculator.buildCalculatorSet(w, h, 6, 10);//initial threads
         while(true){
 
             if(showAxis) {
@@ -198,6 +198,7 @@ public class Renderer extends Thread {
         toX = initialCoordinates[1];
         fromY = initialCoordinates[2];
         toY = initialCoordinates[3];
+        Renderer.clearImage();
     }
     private static double[] getCoordinateCenter(){
         return new double[]{
@@ -211,12 +212,14 @@ public class Renderer extends Thread {
                 h/2,
         };
     }
-    static void centerAtPixel(int... pos){
-        assert pos.length == 2;
-        Renderer.move(
-                getPixelCenter()[0] - pos[0],
-                getPixelCenter()[1] - pos[1]
-        );
+    static void centerAtPixel(){
+        int[] pos = Window.getMousePos();
+        if(pos != null) {
+            Renderer.move(
+                    getPixelCenter()[0] - pos[0],
+                    getPixelCenter()[1] - pos[1]
+            );
+        }
     }
     static void zoomIn() {
         turnOff();
@@ -226,7 +229,7 @@ public class Renderer extends Thread {
                 p2cy(h - h / 4),
                 p2cy(h / 4)
         );
-        if(Sets.mode != Sets.DIR) {
+        if(Sets.mode != complexMath.Mode.DIR) {
             clearImage(zoomInImage());
         }else{
             clearImage();
@@ -241,7 +244,7 @@ public class Renderer extends Thread {
                 p2cy(h + h/2),
                 p2cy(-h/2)
         );
-        if(Sets.mode != Sets.DIR) {
+        if(Sets.mode != complexMath.Mode.DIR) {
             clearImage(zoomOutImage());
         }else{
             clearImage();
@@ -360,10 +363,10 @@ public class Renderer extends Thread {
         }
         img.setData(local.getRaster());
     }
-    private static void turnOff(){
+    public static void turnOff(){
         Calculator.isOn = false;
     }
-    private static void turnOn(){
+    public static void turnOn(){
         Calculator.isOn = true;
     }
     static void togglePosition(){

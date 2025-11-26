@@ -53,7 +53,7 @@ class Window extends JFrame implements MouseMotionListener, MouseListener, KeyLi
     @Override
     public void mousePressed(MouseEvent e) {
         if (e.getButton() == 2) {
-            Sets.topographicStep = .1;
+            Sets.resetTopographicStep();
             Renderer.clearImage();
         } else {
             mousePt = e.getPoint();
@@ -61,8 +61,9 @@ class Window extends JFrame implements MouseMotionListener, MouseListener, KeyLi
     }
     @Override
     public void mouseReleased(MouseEvent e) {
+        Renderer.turnOff();
         Calculator.resetPrecisions();
-        Calculator.isOn = true;
+        Renderer.turnOn();
     }
     @Override
     public void keyPressed(KeyEvent e) {
