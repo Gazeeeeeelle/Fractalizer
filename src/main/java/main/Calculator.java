@@ -115,21 +115,24 @@ class Calculator extends Thread{
         }
     }
     static void buildCalculatorSet(int width, int height, int nOfCalc, int priority){
-        nOfCalc = Renderer.limitToRange(nOfCalc, 0, 12);
+        nOfCalc = limitToRange(nOfCalc, 0, 12);
         calc = new Calculator[nOfCalc];
         for (int i = 0; i < nOfCalc; i++) {
             calc[i] = new Calculator(width, height, nOfCalc, i);
         }
         for (int i = 0; i < nOfCalc; i++) {
-            calc[i].setPriority(Renderer.limitToRange(priority, 1, 10));
+            calc[i].setPriority(limitToRange(priority, 1, 10));
             calc[i].start();
         }
         Renderer.clearImage();
         System.out.println("Calculators started.");
     }
+    private static int limitToRange(int value, int min, int max){
+        return Math.max(Math.min(value, max), min);
+    }
     static void destroyCalculatorSet(){
         try {
-            for (Calculator c : Calculator.calc) {
+            for (Calculator c : calc) {
                 c.purpose = false;
             }
         }catch (NullPointerException e){

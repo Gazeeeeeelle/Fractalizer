@@ -29,6 +29,13 @@ public final class Sets {
         return (cache[i][x][y][0] * cache[i][x][y][0]
                 + cache[i][x][y][1] * cache[i][x][y][1] > 4);
     },
+    mandelbrotTest = (x, y, c1, c2, i) -> {
+        double z1 = cache[i][x][y][0];
+        cache[i][x][y][0] = z1 * z1 - (cache[i][x][y][1] * cache[i][x][y][1]) + c1;
+        cache[i][x][y][1] = (2 * z1 * cache[i][x][y][1]) + c2;
+        return (cache[i][x][y][0] * cache[i][x][y][0]
+                + cache[i][x][y][1] * cache[i][x][y][1] > 4);
+    },
     burningShip = (x, y, c1, c2, i) -> {
         c2 = -c2;
         double z1 = Math.abs(cache[i][x][y][0]);
@@ -55,8 +62,9 @@ public final class Sets {
         return (cache[i][x][y][0] * cache[i][x][y][0]
                 + cache[i][x][y][1] * cache[i][x][y][1] > 4);
     };
+    //FIXME private static final IComplexFunction[] sets = new IComplexFunction[]{null, mandelbrot, burningShip, celtic, powerBrot};
     private static final IComplexFunction[] sets = new IComplexFunction[]{null, mandelbrot, burningShip, celtic, powerBrot};
-
+    public static final int setsLength = sets.length;
     public static boolean calc_frac(int x, int y, int index, int n){
         return cached_generalized(sets[setOfInterest], x, y, index, n);
     }
@@ -229,5 +237,11 @@ public final class Sets {
     }
     public static void resetTopographicStep(){
         topographicStep = .1;
+    }
+    public static void increaseTopographicStep(){
+
+    }
+    public static void decreaseTopographicStep(){
+
     }
 }

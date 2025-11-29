@@ -1,7 +1,7 @@
 package main;
 
-import complexMath.ComplexMath;
 import complexMath.Sets;
+import static complexMath.Sets.clearCache;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -10,8 +10,6 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
-
-import static complexMath.Sets.*;
 
 public class Renderer extends Thread {
     private static final Window window = new Window();
@@ -26,7 +24,7 @@ public class Renderer extends Thread {
     private static final Graphics2D
             img_g = (Graphics2D) img.getGraphics(), //BufferedImage's graphics
             ovr_g = (Graphics2D) ovr.getGraphics(), //Second BufferedImage's graphics
-            g = (Graphics2D) Window.fractalizer.getGraphics(); //Window's JPanel's graphics
+            g = (Graphics2D) window.fractalizer.getGraphics(); //Window's JPanel's graphics
     private static double //Rendering bounds:
             fromX = ((double) w / h * -2),
             toX = ((double) w / h * 2),
@@ -91,7 +89,7 @@ public class Renderer extends Thread {
     }
     private static void numbers(){
         ovr_g.setColor(Color.white);
-        double delta = findDelta();
+        double delta = findDistanceBetweenMarks();
         double dpx = p2cx(1)-p2cx(0);
         for (int x = 0; x < w; x++) {
             if(mod(p2cx(x), delta) <= dpx){
@@ -104,7 +102,7 @@ public class Renderer extends Thread {
             }
         }
     }
-    private static double findDelta(){ //FIXME rename to something more suggestive
+    private static double findDistanceBetweenMarks(){ //FIXME rename to something more suggestive
         int d = 2;
         return Math.pow(2, ((int)log2(toX-fromX) - d));
     }
@@ -121,23 +119,20 @@ public class Renderer extends Thread {
         return difference(a,b*(int)(a/b));
     }
     static void draw_frac(int x, int y, int precision, int times){
-        if (Sets.calc_frac(x, y, 0, times)) {
+        if (Sets.calc_frac(x, y, 0, times)) { //FIXME draw_mode:f ==> calc_mode:f
             if (pinpointPrecision) {
                  img.setRGB(x, y, -1);
             } else {
-                 img.setRGB(
-                        x, y,
-                        Colors.getColor(precision)
-                );
+                 img.setRGB(x, y, Colors.getColorForPrecision(precision));
             }
         }
     }
     static void draw_abs(int x, int y, int index, int nth){
-        if(Sets.calc_abs(x, y, index, nth)) {
+        if(Sets.calc_abs(x, y, index, nth)) { //FIXME draw_mode:f ==> calc_mode:f
             if(Sets.isJulia()){
                 img.setRGB(
                         x, y,
-                        Colors.getColorDir(ComplexMath.inverse(Sets.getFromCache(x, y, index)))
+                        Colors.getInverseColorDir(x, y, index)
                 );
             }else {
                 img.setRGB(
@@ -153,9 +148,7 @@ public class Renderer extends Thread {
         ) {
             int px = Renderer.c2px(z[0]);
             int py = Renderer.c2py(z[1]);
-            if(px>=0 && px < w &&
-                    py>=0 && py < h
-            ){
+            if(px>=0 && px < w && py>=0 && py < h){ //FIXME this is the second time it checks if it is in bounds
                 img.setRGB(px, py, color.getRGB());
             }
         }
@@ -163,15 +156,7 @@ public class Renderer extends Thread {
     static void draw_line(double[] c1, double[] c2, Color color){
         if(Double.isNaN(c1[0])) return;
         img_g.setColor(color);
-        img_g.drawLine(
-                Renderer.c2px(c1[0]),
-                Renderer.c2py(c1[1]),
-                Renderer.c2px(c2[0]),
-                Renderer.c2py(c2[1])
-        );
-    }
-    static int limitToRange(int value, int min, int max){
-        return Math.max(Math.min(value, max), min);
+        img_g.drawLine(c2px(c1[0]), c2py(c1[1]), c2px(c2[0]), c2py(c2[1]));
     }
     static boolean isDraw(int x, int y){
         return Sets.calc_frac(x, y, 1, 1);
@@ -200,12 +185,6 @@ public class Renderer extends Thread {
         toY = initialCoordinates[3];
         Renderer.clearImage();
     }
-    private static double[] getCoordinateCenter(){
-        return new double[]{
-                (toX+fromX)/2,
-                (toY+fromY)/2,
-        };
-    }
     private static int[] getPixelCenter(){
         return new int[]{
                 w/2,
@@ -213,7 +192,7 @@ public class Renderer extends Thread {
         };
     }
     static void centerAtPixel(){
-        int[] pos = Window.getMousePos();
+        int[] pos = window.getMousePos();
         if(pos != null) {
             Renderer.move(
                     getPixelCenter()[0] - pos[0],

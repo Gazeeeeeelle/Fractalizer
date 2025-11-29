@@ -2,24 +2,22 @@ package main;
 
 import complexMath.Sets;
 
+import static complexMath.Sets.increaseTopographicStep;
+import static complexMath.Sets.decreaseTopographicStep;
+import static complexMath.Sets.resetTopographicStep;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
 class Window extends JFrame implements MouseMotionListener, MouseListener, KeyListener, MouseWheelListener {
-    int
+    final int
             width = 1000,
             height = 1000,
             jpWidth = 1000, //814 //FIXME
             jpHeight = 1000; //814 //FIXME
-    static JPanel fractalizer = new JPanel();
-    static JPanel panel = new JPanel();
-    private static Point mousePt = new Point(0, 0);
-    private static final Controller controller = new Controller();
-    static {
-        controller.useMap(controller.keyMap1);
-    }
-
+    final JPanel fractalizer = new JPanel();
+    private Point mousePt = new Point(0, 0);
     Window() {
         this.setPreferredSize(new Dimension(width, height));
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -36,7 +34,6 @@ class Window extends JFrame implements MouseMotionListener, MouseListener, KeyLi
         fractalizer.setBackground(Color.black);
         fractalizer.setFocusable(true);
 
-        this.add(panel);
         this.add(fractalizer);
         this.pack();
 
@@ -50,28 +47,32 @@ class Window extends JFrame implements MouseMotionListener, MouseListener, KeyLi
         Renderer.move(dx, dy);
         mousePt = e.getPoint();
     }
+
     @Override
     public void mousePressed(MouseEvent e) {
         if (e.getButton() == 2) {
-            Sets.resetTopographicStep();
+            resetTopographicStep();
             Renderer.clearImage();
         } else {
             mousePt = e.getPoint();
         }
     }
+
     @Override
     public void mouseReleased(MouseEvent e) {
+        //FIXME make a method in render for this
         Renderer.turnOff();
-        Calculator.resetPrecisions();
+        Calculator.resetPrecisions(); //FIXME
         Renderer.turnOn();
     }
+
     @Override
     public void keyPressed(KeyEvent e) {
         controller.operate(e);
     }
-    static int[] getMousePos(){
+    int[] getMousePos() {
         Point p = fractalizer.getMousePosition();
-        if(p==null)return null;
+        if (p == null) return null;
         return new int[]{
                 (int) (p.getX()),
                 (int) (p.getY())
@@ -81,14 +82,14 @@ class Window extends JFrame implements MouseMotionListener, MouseListener, KeyLi
     public void mouseWheelMoved(MouseWheelEvent e) {
         if (e.getWheelRotation() == 1) {
             if (e.isShiftDown()) {
-                Sets.topographicStep /= 2;
+                decreaseTopographicStep();
                 Renderer.clearImage();
             } else {
                 Renderer.zoomOut();
             }
         } else {
             if (e.isShiftDown()) {
-                Sets.topographicStep *= 2;
+                increaseTopographicStep();
                 Renderer.clearImage();
             } else {
                 Renderer.zoomIn();
@@ -101,7 +102,7 @@ class Window extends JFrame implements MouseMotionListener, MouseListener, KeyLi
     }
     @Override
     public void mouseEntered(MouseEvent e) {
-        if(e.getSource().equals(fractalizer)){
+        if (e.getSource().equals(fractalizer)) {
             this.requestFocus();
         }
     }
@@ -120,5 +121,66 @@ class Window extends JFrame implements MouseMotionListener, MouseListener, KeyLi
     @Override
     public void mouseClicked(MouseEvent e) {
 
+    }
+    private final Controller controller = new Controller();
+    {
+        controller
+                .mapKey("G", e -> {
+                    if (controller.isCool(200)) {
+                        Sets.setZ1(0d, 0d);
+                    }
+                })
+                .mapKey("F", e -> {
+                    if(controller.isCool(200)) Sets.setZPixel(this.getMousePos());
+                })
+                .mapKey("E", e -> {
+                    Renderer.special ^= true;
+                    Renderer.clearImage();
+                })
+                .mapKey("O", e -> {
+                    Renderer.resetRange();
+                })
+                .mapKey("H", e -> {
+                    Sets.toggleInverse();
+                    Renderer.clearImage();
+                })
+                .mapKey("J", e -> {
+                    Sets.toggleJulia();
+                    Renderer.clearImage();
+                })
+                .mapKey("L", e -> {
+                    Sets.connectLines ^= true;
+                    Renderer.clearImage();
+                })
+                .mapKey("C", e -> Renderer.centerAtPixel())
+                .mapKey("N", e -> {
+                    Renderer.togglePinpointPrecision();
+                Renderer.clearImage();
+                })
+                .mapKey("I", e -> System.out.println(Sets.getInfo()))
+                .mapKey("P", e -> {
+                    Renderer.togglePreCalculation();
+                    Renderer.clearImage();
+                })
+                .mapKey("S", e -> Renderer.togglePosition())
+                .mapKey("A", e -> Renderer.toggleAxis())
+                .mapKey("Right", e -> Sets.nextMode())
+                .mapKey("Left", e -> Sets.previousMode())
+                .mapKey("Up", e -> {
+                    Colors.shiftColorPalette(1);
+                    Renderer.clearImage();
+                })
+                .mapKey("Down", e -> {
+                    Colors.shiftColorPalette(-1);
+                    Renderer.clearImage();
+                })
+                .mapKey("F5", e -> Renderer.clearImage())
+                .mapKey("F2", e -> Renderer.screenshot())
+                .mapKey("[1-9]", e -> {
+                    int set = Integer.parseInt(e);
+                    if (set < Sets.setsLength) Renderer.chooseSet(set);
+                    else return;
+                    Renderer.clearImage();
+                });
     }
 }

@@ -5,8 +5,8 @@ import complexMath.Sets;
 
 final class Colors {
     static int whichColorPalette = 0;
-    static int[] //Color palettes:
-            colors1 = {
+    //Color palettes:
+    static int[] colors1 = {
             -12444145, -15136998, -16187089, -16513975,
             -16775324, -15979382, -15183183, -13009455,
             -7948827 , -2888456 , -923201  , -472737  ,
@@ -29,7 +29,7 @@ final class Colors {
             rainbowTone,
             grayTone
     };
-    static int getColor(int n){
+    static int getColorForPrecision(int n){
         return colorPalettes[whichColorPalette][n % colorPalettes[whichColorPalette].length];
     }
     private static int[] makeTone(double r, double g, double b, int minimumR, int minimumG, int minimumB, int size, boolean back, boolean invert){
@@ -99,13 +99,6 @@ final class Colors {
         }
         whichColorPalette = localPointer;
     }
-    static int max(double... values){
-        int index = 0;
-        for (int i = 0; i < values.length-1; i++) {
-            if(values[index]<values[i]) index = i;
-        }
-        return index;
-    }
     static int getColorBW (double a){
         if(Double.isInfinite(a) || Double.isNaN(a)) return 0x0;
         int base = getColorDir(a, 0);
@@ -134,7 +127,7 @@ final class Colors {
         }
         return (0xff<<24)+(r<<16)+(g<<8)+b;
     }
-    static int getColorDir (double... z){
+    static int getColorDir (double... z){ //FIXME redo it
         if(z==null) return 0;
         assert z.length == 2;
         for (double part : z) {
@@ -192,5 +185,8 @@ final class Colors {
             r = 1;
         }
         return (r<<16)+(g<<8)+(b);
+    }
+    static int getInverseColorDir (int x, int y, int index){
+        return getColorDir(ComplexMath.inverse(Sets.getFromCache(x, y, index)));
     }
 }
